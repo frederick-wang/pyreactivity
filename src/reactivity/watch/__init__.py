@@ -37,10 +37,10 @@ def watch_effect(update: Union[Callable[[], Any], Callable[[OnCleanup], None]], 
     default_kwargs = {}
     for k in kwargs:
         if k not in default_kwargs:
-            raise TypeError(f'TypeError: Unknown keyword argument {k} for watch_effect().')
+            raise TypeError(f'Unknown keyword argument {k} for watch_effect().')
         if type(kwargs[k]) != type(default_kwargs[k]):
             raise TypeError(
-                f'TypeError: The type of {k} must be {type(default_kwargs[k])} for watch_effect(), but got {type(kwargs[k])}.')
+                f'The type of {k} must be {type(default_kwargs[k])} for watch_effect(), but got {type(kwargs[k])}.')
 
     stop_flag = False
 
@@ -151,10 +151,10 @@ def watch(
     })
     for k in kwargs:
         if k not in default_kwargs:
-            raise TypeError(f'TypeError: Unknown keyword argument {k} for watch().')
+            raise TypeError(f'Unknown keyword argument {k} for watch().')
         if type(kwargs[k]) != type(default_kwargs[k]):
             raise TypeError(
-                f'TypeError: The type of {k} must be {type(default_kwargs[k])} for watch(), but got {type(kwargs[k])}.')
+                f'The type of {k} must be {type(default_kwargs[k])} for watch(), but got {type(kwargs[k])}.')
     immediate = kwargs.get('immediate', default_kwargs['immediate'])
     deep = kwargs.get('deep', default_kwargs['deep'])
 
@@ -179,7 +179,7 @@ def watch(
         SINGLE_SRC_MOD = True
     for src in src_list:
         if not is_reactive(src) and not is_ref(src) and not isfunction(src):
-            raise TypeError(f'TypeError: Invalid watch source type: {type(src)} for watch().')
+            raise TypeError(f'Invalid watch source type: {type(src)} for watch().')
 
     N = len(src_list)
     old_value_list: List[Union[T, None]] = [None] * N
@@ -199,7 +199,7 @@ def watch(
             elif is_reactive(src):
                 res = src
             else:
-                raise TypeError(f'TypeError: Invalid watch source type: {type(src)} for watch().')
+                raise TypeError(f'Invalid watch source type: {type(src)} for watch().')
             res = cast(T, res)
             if need_walk_deep:
                 __deeply_walk(res)
@@ -281,7 +281,7 @@ def watch(
                     cb(new_value_list, old_value_list[:], cleanup)
             else:
                 raise TypeError(
-                    f'TypeError: Invalid callback function for watch(). The callback function must have 0, 1 or 2 parameters, but got {params_cnt} parameters.'
+                    f'Invalid callback function for watch(). The callback function must have 0, 1 or 2 parameters, but got {params_cnt} parameters.'
                 )
 
             old_value_list[:] = new_value_list
