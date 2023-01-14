@@ -1,18 +1,70 @@
 # reactivity/reactive.py
 
 import types
-from typing import Sequence, Set, TypeVar
+from typing import (ItemsView, Mapping, Sequence, Set, Tuple, TypeVar, Union, ValuesView, cast, overload)
 
 from reactivity.env import DEV
-from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP, REACTIVITY_VALUE
+from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP
+from reactivity.ref.definitions import Ref
 from reactivity.ref.utils import is_ref
 
-from .vars import immutable_builtin_types, supported_builtin_types
 from .utils import (get_global_reactive_obj, is_in_global_original_object_map, is_in_global_reactive_object_map,
                     is_marked_raw, is_reactive, mark_raw, reactive_class_map, reactive_reversed_class_map,
-                    record_new_reactive_obj, to_raw, track_reactive, trigger_reactive)
+                    record_new_reactive_obj, to_raw, track_reactive, track_reactive_value, trigger_reactive,
+                    trigger_reactive_value)
+from .vars import immutable_builtin_types, supported_builtin_types
 
 T = TypeVar('T')
+
+
+@overload
+def _unref_and_reactive(obj: Ref[T]) -> T:
+    ...
+
+
+@overload
+def _unref_and_reactive(obj: T) -> T:
+    ...
+
+
+def _unref_and_reactive(obj: Union[Ref[T], T]) -> T:
+    return cast(Ref[T], obj).value if is_ref(obj) else reactive(cast(T, obj))
+
+
+class dict_items(ItemsView):
+    _mapping: Mapping
+
+    @classmethod
+    def _from_iterable(cls, it):
+        return {_unref_and_reactive(item) for item in it}
+
+    def __contains__(self, item: Tuple):
+        key, value = item
+        try:
+            v = _unref_and_reactive(self._mapping[key])
+        except KeyError:
+            return False
+        else:
+            return v is value or v == value
+
+    def __iter__(self):
+        for key in self._mapping:
+            yield (key, _unref_and_reactive(self._mapping[key]))
+
+
+class dict_values(ValuesView):
+    _mapping: Mapping
+
+    def __contains__(self, value):
+        for key in self._mapping:
+            v = _unref_and_reactive(self._mapping[key])
+            if v is value or v == value:
+                return True
+        return False
+
+    def __iter__(self):
+        for key in self._mapping:
+            yield _unref_and_reactive(self._mapping[key])
 
 
 class ProxyMetaClass(type):
@@ -224,6 +276,7 @@ class ProxyMetaClass(type):
                 cls.wrap_trigger_method(proxy_cls, set_trigger_method, patched_trigger_methods)
         # patch dict methods
         if issubclass(proxy_cls, dict):
+            cls.wrap_dict_view_method(proxy_cls, patched_track_methods)
             cls.wrap_dict_get_method(proxy_cls, patched_track_methods)
             for dict_track_method in cls.dict_track_methods:
                 cls.wrap_track_method(proxy_cls, dict_track_method, patched_track_methods)
@@ -348,43 +401,20 @@ class ProxyMetaClass(type):
             patched_track_methods.add('__dir__')
 
     @staticmethod
-    def wrap_dict_get_method(proxy_cls, patched_track_methods: Set[str]):
-        has_setitem = hasattr(proxy_cls, '__setitem__')
-
-        if has_setitem:
-            raw__setitem__ = getattr(proxy_cls, '__setitem__')
-
-        if hasattr(proxy_cls, 'get'):
-            raw_get = getattr(proxy_cls, 'get')
-
-            def get(self, key, default=None):
-                original = to_raw(self)
-                track_reactive(self, REACTIVITY_VALUE)
-                if DEV:
-                    print(
-                        f'''[Reactive] track(get): key={key}, default={default}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
-                    )
-                result = original.get(key, default)
-                return result.value if is_ref(result) else reactive(result)
-
-            setattr(proxy_cls, 'get', get)
-            patched_track_methods.add('get')
-
-    @staticmethod
     def wrap_item_methods(proxy_cls, patched_methods: Set[str], patched_trigger_methods: Set[str]):
         # sourcery skip: assign-if-exp, reintroduce-else
         has_getitem = hasattr(proxy_cls, '__getitem__')
         has_setitem = hasattr(proxy_cls, '__setitem__')
 
-        if has_setitem:
-            raw__setitem__ = getattr(proxy_cls, '__setitem__')
+        # if has_setitem:
+        # raw__setitem__ = getattr(proxy_cls, '__setitem__')
 
         if has_getitem:
-            raw__getitem__ = getattr(proxy_cls, '__getitem__')
+            # raw__getitem__ = getattr(proxy_cls, '__getitem__')
 
             def __getitem__(self, key):
                 original = to_raw(self)
-                track_reactive(self, REACTIVITY_VALUE)
+                track_reactive_value(self)
                 if DEV:
                     print(
                         f'''[Reactive] track(__getitem__): key={key}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
@@ -409,7 +439,7 @@ class ProxyMetaClass(type):
                     return
                 # raw__setitem__(self, key, value)
                 original.__setitem__(key, value)
-                trigger_reactive(self, REACTIVITY_VALUE)
+                trigger_reactive_value(self)
                 if DEV:
                     print(
                         f'''[Reactive] trigger(__setitem__): key={key}, value={value}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
@@ -423,11 +453,11 @@ class ProxyMetaClass(type):
         if not hasattr(proxy_cls, method_name) or method_name in patched_methods:
             return
 
-        raw_method = getattr(proxy_cls, method_name)
+        # raw_method = getattr(proxy_cls, method_name)
 
         def wrapper(self, *args, **kwargs):
             original = to_raw(self)
-            track_reactive(self, REACTIVITY_VALUE)
+            track_reactive_value(self)
             if DEV:
                 print(
                     f'''[Reactive] track({method_name}): args={args}, kwargs={kwargs}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
@@ -444,13 +474,13 @@ class ProxyMetaClass(type):
         if not hasattr(proxy_cls, method_name) or method_name in patched_methods:
             return
 
-        raw_method = getattr(proxy_cls, method_name)
+        # raw_method = getattr(proxy_cls, method_name)
 
         def wrapper(self, *args, **kwargs):
             original = to_raw(self)
             # result = raw_method(self, *args, **kwargs)
             result = original.__getattribute__(method_name)(*args, **kwargs)
-            trigger_reactive(self, REACTIVITY_VALUE)
+            trigger_reactive_value(self)
             if DEV:
                 print(
                     f'''[Reactive] trigger({method_name}): args={args}, kwargs={kwargs}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
@@ -459,6 +489,49 @@ class ProxyMetaClass(type):
 
         setattr(proxy_cls, method_name, wrapper)
         patched_methods.add(method_name)
+
+    @staticmethod
+    def wrap_dict_get_method(proxy_cls, patched_track_methods: Set[str]):
+        if hasattr(proxy_cls, 'get'):  # Fool-proofing
+
+            def get(self, key, default=None):
+                original = to_raw(self)
+                track_reactive_value(self)
+                if DEV:
+                    print(
+                        f'''[Reactive] track(get): key={key}, default={default}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
+                    )
+                result = original.get(key, default)
+                return result.value if is_ref(result) else reactive(result)
+
+            setattr(proxy_cls, 'get', get)
+            patched_track_methods.add('get')
+
+    @staticmethod
+    def wrap_dict_view_method(proxy_cls, patched_track_methods: Set[str]):
+        if hasattr(proxy_cls, 'items'):  # Fool-proofing
+
+            def items(self) -> dict_items:
+                original: dict = to_raw(self)
+                track_reactive_value(self)
+                if DEV:
+                    print(f'''[Reactive] track(items): self={repr(self)} at {hex(id(self))} ({id(self)})''')
+                return dict_items(original)
+
+            setattr(proxy_cls, 'items', items)
+            patched_track_methods.add('items')
+
+        if hasattr(proxy_cls, 'values'):
+
+            def values(self) -> dict_values:
+                original: dict = to_raw(self)
+                track_reactive_value(self)
+                if DEV:
+                    print(f'''[Reactive] track(values): self={repr(self)} at {hex(id(self))} ({id(self)})''')
+                return dict_values(original)
+
+            setattr(proxy_cls, 'values', values)
+            patched_track_methods.add('values')
 
 
 def reactive(instance: T) -> T:
