@@ -173,6 +173,19 @@ def test_should_allow_setting_property_from_a_ref_to_another_ref():
     assert dummy.value == 2
 
 
+# should hold reactivity when a ref is as a member of a reactive object
+def test_should_hold_reactivity_when_a_ref_is_as_a_member_of_a_reactive_object():
+    count = ref(0)
+    state = reactive({
+        'count': count,
+    })
+
+    assert state['count'] == 0
+
+    state['count'] = 1
+    assert count.value == 1
+
+
 # markRaw
 def test_mark_raw():
     obj = reactive({
