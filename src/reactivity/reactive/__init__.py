@@ -84,6 +84,7 @@ class ProxyMetaClass(type):
         # callable objects
         '__call__',
         # emulating container types
+        '__len__',
         '__missing__',
         '__iter__',
         '__reversed__',
