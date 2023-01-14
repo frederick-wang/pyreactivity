@@ -348,16 +348,40 @@ class ProxyMetaClass(type):
                 if is_in_global_original_object_map(self):
                     original = to_raw(self)
                     old_value = original.__getattribute__(name) if hasattr(self, name) else None
-                    if old_value == value:
-                        return
-                    original.__setattr__(name, value)
+                    if is_ref(old_value):
+                        old_value = cast(Ref, old_value)
+                        if is_ref(value):
+                            value = cast(Ref, value)
+                            if old_value.value == value.value:
+                                return
+                            original.__setattr__(name, value)
+                        else:
+                            if old_value.value == value:
+                                return
+                            old_value.value = value
+                    else:
+                        if old_value == value:
+                            return
+                        original.__setattr__(name, value)
                 else:
                     # 如果是一个自定义类，那在初始化响应式对象时，可能会执行一些操作，
                     # 但此时还没有将响应式对象和原始对象关联在一起，只对响应式对象操作即可
                     old_value = raw__getattribute__(self, name) if hasattr(self, name) else None
-                    if old_value == value:
-                        return
-                    raw__setattr__(self, name, value)
+                    if is_ref(old_value):
+                        old_value = cast(Ref, old_value)
+                        if is_ref(value):
+                            value = cast(Ref, value)
+                            if old_value.value == value.value:
+                                return
+                            raw__setattr__(self, name, value)
+                        else:
+                            if old_value.value == value:
+                                return
+                            old_value.value = value
+                    else:
+                        if old_value == value:
+                            return
+                        raw__setattr__(self, name, value)
                 trigger_reactive(self, name)
                 if DEV:
                     print(
@@ -435,10 +459,22 @@ class ProxyMetaClass(type):
                 original = to_raw(self)
                 # old_value = raw__getitem__(self, key) if key in self else None
                 old_value = original.__getitem__(key) if key in self else None
-                if old_value == value:
-                    return
-                # raw__setitem__(self, key, value)
-                original.__setitem__(key, value)
+                if is_ref(old_value):
+                    old_value = cast(Ref, old_value)
+                    if is_ref(value):
+                        value = cast(Ref, value)
+                        if old_value.value == value.value:
+                            return
+                        original.__setitem__(key, value)
+                    else:
+                        if old_value.value == value:
+                            return
+                        old_value.value = value
+                else:
+                    if old_value == value:
+                        return
+                    # raw__setitem__(self, key, value)
+                    original.__setitem__(key, value)
                 trigger_reactive_value(self)
                 if DEV:
                     print(
