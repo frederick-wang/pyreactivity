@@ -1,7 +1,7 @@
 # reactivity/reactive.py
 
 import types
-from typing import (ItemsView, Mapping, Sequence, Set, Tuple, TypeVar, Union, ValuesView, cast, overload)
+from typing import (Any, Dict, ItemsView, Mapping, Sequence, Set, Tuple, TypeVar, Union, ValuesView, cast, overload)
 
 from reactivity.env import DEV
 from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP
@@ -568,6 +568,19 @@ class ProxyMetaClass(type):
 
             setattr(proxy_cls, 'values', values)
             patched_track_methods.add('values')
+
+
+U = TypeVar('U')
+
+
+@overload
+def reactive(instance: Dict[U, Any]) -> Dict[U, Any]:
+    ...
+
+
+@overload
+def reactive(instance: T) -> T:
+    ...
 
 
 def reactive(instance: T) -> T:
