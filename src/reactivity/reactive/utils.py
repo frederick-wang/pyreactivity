@@ -3,7 +3,7 @@ from typing import Dict, Set, TypeVar, Union, cast
 from reactivity.effect.definations import ReactiveEffectDef
 from reactivity.effect.utils import (active_effect_stack, track_effects, trigger_effects)
 from reactivity.env import DEV
-from reactivity.flags import FLAG_OF_REACTIVE
+from reactivity.flags import FLAG_OF_REACTIVE, REACTIVITY_VALUE
 
 T = TypeVar('T')
 
@@ -41,9 +41,17 @@ def track_reactive(obj: object, key: str) -> None:
     track_effects(deps)
 
 
+def track_reactive_value(obj: object) -> None:
+    track_reactive(obj, REACTIVITY_VALUE)
+
+
 def trigger_reactive(obj: object, key: str) -> None:
     subscribers = __get_reactive_subscribers(obj, key)
     trigger_effects(subscribers)
+
+
+def trigger_reactive_value(obj: object) -> None:
+    trigger_reactive(obj, REACTIVITY_VALUE)
 
 
 def is_in_global_reactive_object_map(original: object) -> bool:
