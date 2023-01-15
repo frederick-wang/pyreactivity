@@ -1,14 +1,19 @@
-# pyreactivity
+![](https://res.zhaoji.ac.cn/images/202301151046002.png)
 
-A Python package for reactivity like Vue.js.
 
-Test cases for all currently supported features are in `tests` directory, written in pytest. To run tests, use `pytest` command.
 
-## Installation
+<p align="center" color="#262626">
+Providing a responsive system similar to Vue.js for Python.
+</p>
 
-```bash
-pip install pyreactivity
-```
+
+<p align="center">
+<img src="https://img.shields.io/pypi/pyversions/pyreactivity" alt="pyversions"> <img src="https://img.shields.io/pypi/v/pyreactivity" alt="version"> <img src="https://img.shields.io/pypi/l/pyreactivity" alt="license"> <img src="https://img.shields.io/github/last-commit/frederick-wang/pyreactivity" alt="last-commit"> <img src="https://img.shields.io/github/commit-activity/m/frederick-wang/pyreactivity" alt="commit-activity">
+</p>
+
+## Getting Started
+
+Please follow the documentation at [pyreactivity.jianmu.org](https://pyreactivity.jianmu.org/)
 
 ## Supported features
 
@@ -25,19 +30,12 @@ pip install pyreactivity
 - [x] `to_raw` ( `toRaw` ) function
 - [x] `mark_raw` ( `markRaw` ) function
 
-## Simple Demo
+## Contributing
 
-```python
-from reactivity import ref, computed
+PyReactivity is an open-source project and welcomes any contributions. If you have any issues or suggestions, feel free to raise them in the [Github Issues](https://github.com/frederick-wang/pyreactivity/issues).
 
-a = ref('')
-b = computed(lambda: ''.join(reversed(a.value)))
-a.value = 'hello'
-print(b.value)  # olleh
-a.value = 'world'
-print(b.value)  # dlrow
-```
+## Acknowledgments
 
-## Inspiration
+PyReactivity is inspired by Vue.js and its implementation also references the source code of Vue.js. Thanks to the Vue.js team for their selfless dedication.
 
-This package is inspired by Vue.js.
+This documentation also heavily references the documentation of Vue.js, thanks to the document writers of Vue.js for their selfless dedication.
