@@ -216,13 +216,13 @@ def test_watching_multiple_sources_reactive_object_with_automatic_deep_true():
 
 # warn invalid watch source
 def test_warn_invalid_watch_source():
-    with pytest.raises(TypeError, match='TypeError: Invalid watch source type'):
+    with pytest.raises(TypeError, match='Invalid watch source type'):
         watch(1, lambda: None)
 
 
 # warn invalid watch source: multiple sources
 def test_warn_invalid_watch_source_multiple_sources():
-    with pytest.raises(TypeError, match='TypeError: Invalid watch source type'):
+    with pytest.raises(TypeError, match='Invalid watch source type'):
         watch([1], lambda: None)
 
 
@@ -435,7 +435,7 @@ def test_warn_immediate_option_when_using_effect():
         nonlocal dummy
         dummy = count.value
 
-    with pytest.raises(TypeError, match='TypeError: Unknown keyword argument immediate for watch_effect().'):
+    with pytest.raises(TypeError, match='Unknown keyword argument immediate for watch_effect().'):
         watch_effect(e, immediate=True)  # type: ignore
 
 
@@ -452,7 +452,7 @@ def test_warn_and_not_respect_deep_option_when_using_effect():
         spy()
         return arr
 
-    with pytest.raises(TypeError, match='TypeError: Unknown keyword argument deep for watch_effect().'):
+    with pytest.raises(TypeError, match='Unknown keyword argument deep for watch_effect().'):
         watch_effect(e, deep=True)  # type: ignore
 
 
