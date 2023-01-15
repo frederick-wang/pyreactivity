@@ -8,7 +8,7 @@ export default defineUserConfig({
     '/': {
       lang: 'en-US',
       title: 'PyReactivity',
-      description: 'Providing a responsive system similar to Vue.js for Python'
+      description: 'Providing a reactivity system similar to Vue.js for Python'
     },
     '/zh/': {
       lang: 'zh-CN',

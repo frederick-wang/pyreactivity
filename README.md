@@ -3,7 +3,7 @@
 
 
 <p align="center" color="#262626">
-Providing a responsive system similar to Vue.js for Python.
+Providing a reactivity system similar to Vue.js for Python.
 </p>
 
 
