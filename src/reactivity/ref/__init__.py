@@ -1,14 +1,14 @@
 # reactivity/ref.py
 
-from typing import Dict, Generic, Set, TypeVar, Union, cast
+from typing import Any, Dict, Generic, Set, TypeVar, Union, cast, overload
 
+from reactivity.computed.utils import is_computed_ref
 from reactivity.effect.definations import ReactiveEffectDef
 from reactivity.effect.utils import (active_effect_stack, track_effects, trigger_effects)
 from reactivity.env import DEV
 from reactivity.flags import FLAG_OF_REF, REF_VALUE
 from reactivity.reactive import reactive
 from reactivity.reactive.utils import reactive_reversed_class_map
-from reactivity.computed.utils import is_computed_ref
 
 from .definitions import Ref
 from .utils import is_ref, unref
@@ -79,7 +79,22 @@ class RefImpl(Generic[T]):
         return f'<Ref[{t.__name__}] value={self.__value}>'
 
 
-def ref(value: Union[T, Ref[T], None] = None) -> Ref[T]:
+@overload
+def ref(value: T) -> Ref[T]:
+    ...
+
+
+@overload
+def ref(value: Ref[T]) -> Ref[T]:
+    ...
+
+
+@overload
+def ref(value: None = None) -> Ref[Any]:
+    ...
+
+
+def ref(value: Union[T, Ref[T]] = None) -> Ref[T]:
     if is_ref(value):
         value = cast(Ref[T], value)
         return value
