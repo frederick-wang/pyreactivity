@@ -18,6 +18,7 @@ export default defineUserConfig({
   },
   theme: defaultTheme({
     repo: 'https://github.com/frederick-wang/pyreactivity',
+    docsDir: 'docs',
     locales: {
       '/': {
         notFound: [
