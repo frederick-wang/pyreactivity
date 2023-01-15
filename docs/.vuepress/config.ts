@@ -1,7 +1,22 @@
-import { defineUserConfig, defaultTheme } from 'vuepress'
+import { defineUserConfig, defaultTheme, HeadConfig } from 'vuepress'
+
+const head: HeadConfig[] = [
+  ['link', { rel: 'icon', href: '/favicon.png' }],
+  [
+    'script',
+    {},
+    `var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?211ab9d31dcec894b59910c5eb1d060c";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();`
+  ]
+]
 
 export default defineUserConfig({
-  head: [['link', { rel: 'icon', href: '/favicon.png' }]],
+  head,
   locales: {
     // 键名是该语言所属的子路径
     // 作为特例，默认语言可以使用 '/' 作为其路径。
