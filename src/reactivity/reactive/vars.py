@@ -1,20 +1,22 @@
+from typing import cast
+
 immutable_builtin_types = (
     int,
     float,
     str,
     bool,
-    frozenset,
+    cast(type, frozenset),
     bytes,
 )
 
-immutable_but_containable_builtin_types = (tuple,)
+immutable_but_containable_builtin_types = (cast(type, tuple),)
 
 mutable_builtin_types = (
-    list,
+    cast(type, list),
     bytearray,
     memoryview,
-    set,
-    dict,
+    cast(type, set),
+    cast(type, dict),
 )
 
 supported_builtin_types = (

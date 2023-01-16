@@ -14,12 +14,12 @@ next: ./essentials/reactivity-fundamentals
 ::: tip Prerequisites
 
 - Familiarity with the command line
-- [Python]((https://www.python.org/downloads/)) 3.7 or later version installed
+- [Python]((https://www.python.org/downloads/)) 3.6 or later version installed
 :::
 
 In this section, we will show you how to install PyReactivity in your project.
 
-Make sure you have [Python 3.7 or later version](https://www.python.org/downloads/) installed, then enter the following command in the command line (without the `>` symbol):
+Make sure you have [Python 3.6 or later version](https://www.python.org/downloads/) installed, then enter the following command in the command line (without the `>` symbol):
 
 ```bash:no-line-numbers
 > pip install pyreactivity

@@ -1,7 +1,8 @@
-# reactivity/reactive.py
+# pyright: reportMissingTypeStubs=false
 
 import types
-from typing import (Any, Dict, ItemsView, Mapping, Sequence, Set, Tuple, TypeVar, Union, ValuesView, cast, overload)
+from typing import (Any, Dict, ItemsView, Mapping, MutableMapping, MutableSequence, Optional,
+                    Sequence, Set, Tuple, TypeVar, Union, ValuesView, cast, overload)
 
 from reactivity.env import DEV
 from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP
@@ -15,6 +16,7 @@ from .utils import (get_global_reactive_obj, is_in_global_original_object_map, i
 from .vars import immutable_builtin_types, supported_builtin_types
 
 T = TypeVar('T')
+U = TypeVar('U')
 
 
 @overload
@@ -31,14 +33,11 @@ def _unref_and_reactive(obj: Union[Ref[T], T]) -> T:
     return cast(Ref[T], obj).value if is_ref(obj) else reactive(cast(T, obj))
 
 
-class dict_items(ItemsView):
-    _mapping: Mapping
+class dict_items(ItemsView[T, U]):
+    _mapping: Mapping[T, U]
 
-    @classmethod
-    def _from_iterable(cls, it):
-        return {_unref_and_reactive(item) for item in it}
-
-    def __contains__(self, item: Tuple):
+    def __contains__(self, item: object) -> bool:
+        item = cast(Tuple[T, U], item)
         key, value = item
         try:
             v = _unref_and_reactive(self._mapping[key])
@@ -52,10 +51,10 @@ class dict_items(ItemsView):
             yield (key, _unref_and_reactive(self._mapping[key]))
 
 
-class dict_values(ValuesView):
-    _mapping: Mapping
+class dict_values(ValuesView[U]):
+    _mapping: Mapping[Any, U]
 
-    def __contains__(self, value):
+    def __contains__(self, value: object) -> bool:
         for key in self._mapping:
             v = _unref_and_reactive(self._mapping[key])
             if v is value or v == value:
@@ -236,9 +235,9 @@ class ProxyMetaClass(type):
     dict_track_methods: Set[str] = {'copy', 'fromkeys', 'get', 'items', 'keys', 'reversed', 'values'}
     dict_trigger_methods: Set[str] = {'clear', 'pop', 'popitem', 'setdefault', 'update'}
 
-    def __new__(cls, name, bases, attrs):
+    def __new__(cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any]) -> Optional[type]:
         # Check if None is in bases, if so, it means that this is the first call to __new__ and we should not do anything
-        if None in bases:
+        if type(None) in bases:
             return None
         proxy_cls = type.__new__(cls, name, bases, attrs)
 
@@ -298,7 +297,7 @@ class ProxyMetaClass(type):
         return proxy_cls
 
     @staticmethod
-    def wrap_attr_methods(proxy_cls, patched_track_methods: Set[str], patched_trigger_methods: Set[str]):
+    def wrap_attr_methods(proxy_cls: type, patched_track_methods: Set[str], patched_trigger_methods: Set[str]):
         # sourcery skip: assign-if-exp, reintroduce-else
 
         has_setattr = hasattr(proxy_cls, '__setattr__')
@@ -308,7 +307,7 @@ class ProxyMetaClass(type):
         if hasattr(proxy_cls, '__getattribute__'):
             raw__getattribute__ = getattr(proxy_cls, '__getattribute__')
 
-            def __getattribute__(self, name):
+            def __getattribute__(self: object, name: str):
                 # If the attribute is patched, return the original attribute and do not track it
                 is_magic: bool = name.startswith('__') and name.endswith('__')
                 if name in patched_track_methods or name in patched_trigger_methods or is_magic:
@@ -343,16 +342,16 @@ class ProxyMetaClass(type):
 
         if has_setattr:
 
-            def __setattr__(self, name, value):
+            def __setattr__(self: object, name: str, value: Any):
                 if is_reactive(value):
                     value = to_raw(value)
                 if is_in_global_original_object_map(self):
                     original = to_raw(self)
                     old_value = original.__getattribute__(name) if hasattr(self, name) else None
                     if is_ref(old_value):
-                        old_value = cast(Ref, old_value)
+                        old_value = cast(Ref[Any], old_value)
                         if is_ref(value):
-                            value = cast(Ref, value)
+                            value = cast(Ref[Any], value)
                             if old_value.value == value.value:
                                 return
                             original.__setattr__(name, value)
@@ -369,9 +368,9 @@ class ProxyMetaClass(type):
                     # 但此时还没有将响应式对象和原始对象关联在一起，只对响应式对象操作即可
                     old_value = raw__getattribute__(self, name) if hasattr(self, name) else None
                     if is_ref(old_value):
-                        old_value = cast(Ref, old_value)
+                        old_value = cast(Ref[Any], old_value)
                         if is_ref(value):
-                            value = cast(Ref, value)
+                            value = cast(Ref[Any], value)
                             if old_value.value == value.value:
                                 return
                             raw__setattr__(self, name, value)
@@ -395,7 +394,7 @@ class ProxyMetaClass(type):
         if hasattr(proxy_cls, '__delattr__'):
             raw__delattr__ = getattr(proxy_cls, '__delattr__')
 
-            def __delattr__(self, name):
+            def __delattr__(self: object, name: str):
                 if is_in_global_original_object_map(self):
                     original = to_raw(self)
                     original.__delattr__(name)
@@ -411,7 +410,7 @@ class ProxyMetaClass(type):
         if hasattr(proxy_cls, '__dir__'):
             raw__dir__ = getattr(proxy_cls, '__dir__')
 
-            def __dir__(self):
+            def __dir__(self: object):
                 track_reactive(self, '__dir__')
                 if DEV:
                     print(f'''[Reactive] __dir__: self={repr(self)} at {hex(id(self))} ({id(self)})''')
@@ -426,7 +425,7 @@ class ProxyMetaClass(type):
             patched_track_methods.add('__dir__')
 
     @staticmethod
-    def wrap_item_methods(proxy_cls, patched_methods: Set[str], patched_trigger_methods: Set[str]):
+    def wrap_item_methods(proxy_cls: type, patched_methods: Set[str], patched_trigger_methods: Set[str]):
         # sourcery skip: assign-if-exp, reintroduce-else
         has_getitem = hasattr(proxy_cls, '__getitem__')
         has_setitem = hasattr(proxy_cls, '__setitem__')
@@ -437,7 +436,7 @@ class ProxyMetaClass(type):
         if has_getitem:
             # raw__getitem__ = getattr(proxy_cls, '__getitem__')
 
-            def __getitem__(self, key):
+            def __getitem__(self: Union[Sequence[Any], Mapping[Any, Any]], key: slice):
                 original = to_raw(self)
                 track_reactive_value(self)
                 if DEV:
@@ -446,7 +445,7 @@ class ProxyMetaClass(type):
                     )
                 result = original.__getitem__(key)
                 if is_ref(result) and not isinstance(self, list):
-                    return result.value
+                    return cast(Ref[Any], result).value
                 return reactive(result)
 
             setattr(proxy_cls, '__getitem__', __getitem__)
@@ -454,16 +453,16 @@ class ProxyMetaClass(type):
 
         if has_setitem:
 
-            def __setitem__(self, key, value):
+            def __setitem__(self: Union[MutableSequence[Any], MutableMapping[Any, Any]], key: slice, value: Any):
                 if is_reactive(value):
                     value = to_raw(value)
                 original = to_raw(self)
                 # old_value = raw__getitem__(self, key) if key in self else None
                 old_value = original.__getitem__(key) if key in self else None
                 if is_ref(old_value):
-                    old_value = cast(Ref, old_value)
+                    old_value = cast(Ref[Any], old_value)
                     if is_ref(value):
-                        value = cast(Ref, value)
+                        value = cast(Ref[Any], value)
                         if old_value.value == value.value:
                             return
                         original.__setitem__(key, value)
@@ -486,13 +485,13 @@ class ProxyMetaClass(type):
             patched_trigger_methods.add('__setitem__')
 
     @staticmethod
-    def wrap_track_method(proxy_cls, method_name: str, patched_methods: Set[str]) -> None:
+    def wrap_track_method(proxy_cls: type, method_name: str, patched_methods: Set[str]) -> None:
         if not hasattr(proxy_cls, method_name) or method_name in patched_methods:
             return
 
         # raw_method = getattr(proxy_cls, method_name)
 
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self: object, *args: Any, **kwargs: Any):
             original = to_raw(self)
             track_reactive_value(self)
             if DEV:
@@ -507,13 +506,13 @@ class ProxyMetaClass(type):
         patched_methods.add(method_name)
 
     @staticmethod
-    def wrap_trigger_method(proxy_cls, method_name: str, patched_methods: Set[str]) -> None:
+    def wrap_trigger_method(proxy_cls: type, method_name: str, patched_methods: Set[str]) -> None:
         if not hasattr(proxy_cls, method_name) or method_name in patched_methods:
             return
 
         # raw_method = getattr(proxy_cls, method_name)
 
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self: object, *args: Any, **kwargs: Any):
             original = to_raw(self)
             # result = raw_method(self, *args, **kwargs)
             result = original.__getattribute__(method_name)(*args, **kwargs)
@@ -528,10 +527,10 @@ class ProxyMetaClass(type):
         patched_methods.add(method_name)
 
     @staticmethod
-    def wrap_dict_get_method(proxy_cls, patched_track_methods: Set[str]):
+    def wrap_dict_get_method(proxy_cls: type, patched_track_methods: Set[str]):
         if hasattr(proxy_cls, 'get'):  # Fool-proofing
 
-            def get(self, key, default=None):
+            def get(self: Dict[Any, Any], key: Any, default: Any = None):
                 original = to_raw(self)
                 track_reactive_value(self)
                 if DEV:
@@ -545,11 +544,11 @@ class ProxyMetaClass(type):
             patched_track_methods.add('get')
 
     @staticmethod
-    def wrap_dict_view_method(proxy_cls, patched_track_methods: Set[str]):
+    def wrap_dict_view_method(proxy_cls: type, patched_track_methods: Set[str]):
         if hasattr(proxy_cls, 'items'):  # Fool-proofing
 
-            def items(self) -> dict_items:
-                original: dict = to_raw(self)
+            def items(self: Dict[T, U]) -> dict_items[T, U]:
+                original: Dict[T, U] = to_raw(self)
                 track_reactive_value(self)
                 if DEV:
                     print(f'''[Reactive] track(items): self={repr(self)} at {hex(id(self))} ({id(self)})''')
@@ -560,8 +559,8 @@ class ProxyMetaClass(type):
 
         if hasattr(proxy_cls, 'values'):
 
-            def values(self) -> dict_values:
-                original: dict = to_raw(self)
+            def values(self: Dict[Any, U]) -> dict_values[U]:
+                original: Dict[Any, U] = to_raw(self)
                 track_reactive_value(self)
                 if DEV:
                     print(f'''[Reactive] track(values): self={repr(self)} at {hex(id(self))} ({id(self)})''')
@@ -569,9 +568,6 @@ class ProxyMetaClass(type):
 
             setattr(proxy_cls, 'values', values)
             patched_track_methods.add('values')
-
-
-U = TypeVar('U')
 
 
 @overload
@@ -630,7 +626,7 @@ def reactive(instance: T) -> T:
     return __create_proxy(instance, init_with_instance=False)
 
 
-def get_patched_class(instance):
+def get_patched_class(instance: object):
     raw_class = instance.__class__
     if raw_class not in reactive_class_map:
         class_name = raw_class.__name__
@@ -639,7 +635,7 @@ def get_patched_class(instance):
     return reactive_class_map[raw_class]
 
 
-def __create_proxy(instance, init_with_instance=True):
+def __create_proxy(instance: object, init_with_instance: bool = True):
     if DEV:
         print(f'[Reactive] create proxy: {instance}')
     patched_class = get_patched_class(instance)

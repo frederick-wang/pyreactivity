@@ -14,12 +14,12 @@ next: ./essentials/reactivity-fundamentals
 ::: tip 前提条件
 
 - 熟悉命令行
-- 已安装 3.7 或更高版本的 [Python](https://www.python.org/downloads/)
+- 已安装 3.6 或更高版本的 [Python](https://www.python.org/downloads/)
 :::
 
 在本节中，我们将介绍如何在你的项目中安装 PyReactivity。
 
-确保你已经安装了 [Python 3.7 或更高版本](https://www.python.org/downloads/)，然后在命令行中输入以下命令（不要带上 `>` 符号）：
+确保你已经安装了 [Python 3.6 或更高版本](https://www.python.org/downloads/)，然后在命令行中输入以下命令（不要带上 `>` 符号）：
 
 ```bash:no-line-numbers
 > pip install pyreactivity

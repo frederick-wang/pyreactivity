@@ -12,11 +12,11 @@ T = TypeVar('T')
 class ReactiveEffect(ReactiveEffectDef[T]):
     active: bool
     fn: Callable[[], T]
-    scheduler: Union[Callable, None]
+    scheduler: Union[Callable[[], None], None]
     computed: Union[Any, None]  # type: ComputedRefImpl[T]
-    deps: 'List[Set[ReactiveEffectDef]]'
+    deps: 'List[Set[ReactiveEffectDef[Any]]]'
 
-    def __init__(self, fn: Callable[[], T], scheduler: Union[Callable, None] = None) -> None:
+    def __init__(self, fn: Callable[[], T], scheduler: Union[Callable[[], None], None] = None) -> None:
         self.active = True
         self.fn = fn
         self.scheduler = scheduler
@@ -41,7 +41,7 @@ class ReactiveEffect(ReactiveEffectDef[T]):
         return self.run()
 
 
-def effect(update: Callable[[], Any]) -> ReactiveEffect:
+def effect(update: Callable[[], T]) -> ReactiveEffect[T]:
 
     def wrapper():
         e = ReactiveEffect(update)

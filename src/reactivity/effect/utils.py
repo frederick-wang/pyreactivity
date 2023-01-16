@@ -1,10 +1,10 @@
-from typing import Set
+from typing import Any, Set
 
 from .definations import ReactiveEffectDef
 from .vars import active_effect_stack
 
 
-def cleanup_effect(effect: ReactiveEffectDef) -> None:
+def cleanup_effect(effect: ReactiveEffectDef[Any]) -> None:
     if not effect.deps:
         return
     for dep in effect.deps:
@@ -12,14 +12,14 @@ def cleanup_effect(effect: ReactiveEffectDef) -> None:
     effect.deps.clear()
 
 
-def track_effects(dep: Set[ReactiveEffectDef]):
+def track_effects(dep: Set[ReactiveEffectDef[Any]]):
     active_effect = active_effect_stack[-1]
     dep.add(active_effect)
     if dep not in active_effect.deps:
         active_effect.deps.append(dep)
 
 
-def trigger_effects(effects: Set[ReactiveEffectDef]):
+def trigger_effects(effects: Set[ReactiveEffectDef[Any]]):
     effect_list = list(effects)
     for effect in effect_list:
         if effect.computed is not None:
@@ -29,7 +29,7 @@ def trigger_effects(effects: Set[ReactiveEffectDef]):
             trigger_effect(effect)
 
 
-def trigger_effect(effect: ReactiveEffectDef) -> None:
+def trigger_effect(effect: ReactiveEffectDef[Any]) -> None:
     if effect.scheduler is None:
         effect.run()
     else:

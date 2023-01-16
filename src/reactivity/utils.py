@@ -1,3 +1,5 @@
+# pyright: reportMissingTypeStubs=false
+
 from reactivity.flags import FLAG_OF_READONLY
 
 

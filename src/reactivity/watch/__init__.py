@@ -1,12 +1,13 @@
-from inspect import signature, isfunction
-from typing import Any, Callable, List, Sequence, TypeVar, Union, cast, overload
+# pyright: reportMissingTypeStubs=false
 
+from inspect import isfunction, signature
+from typing import (Any, Callable, Dict, List, Sequence, TypeVar, Union, cast, overload)
+
+from reactivity.effect import effect
 from reactivity.reactive.utils import is_reactive
 from reactivity.reactive.vars import immutable_builtin_types
 from reactivity.ref.definitions import Ref
 from reactivity.ref.utils import is_ref
-
-from reactivity.effect import effect
 
 T = TypeVar('T')
 
@@ -19,7 +20,7 @@ OnCleanup = Callable[[Callable[[], None]], None]
 WatchCallback = Union[Callable[[T, T, OnCleanup], Any], Callable[[T, T], Any], Callable[[T], Any], Callable[[], Any]]
 
 
-def __get_fn_params_count(fn: Callable) -> int:
+def __get_fn_params_count(fn: Callable[..., Any]) -> int:
     return len(signature(fn).parameters)
 
 
@@ -33,8 +34,8 @@ def watch_effect(update: Callable[[OnCleanup], Any]) -> StopHandle:
     ...
 
 
-def watch_effect(update: Union[Callable[[], Any], Callable[[OnCleanup], None]], **kwargs) -> StopHandle:
-    default_kwargs = {}
+def watch_effect(update: Union[Callable[[], Any], Callable[[OnCleanup], None]], **kwargs: Any) -> StopHandle:
+    default_kwargs: Dict[Any, Any] = {}
     for k in kwargs:
         if k not in default_kwargs:
             raise TypeError(f'Unknown keyword argument {k} for watch_effect().')
@@ -84,13 +85,15 @@ def watch_effect(update: Union[Callable[[], Any], Callable[[OnCleanup], None]], 
 
 def __deeply_walk(obj: object) -> None:
     if is_ref(obj):
-        obj = cast(Ref, obj).value
+        obj = cast(Ref[Any], obj).value
     if not is_reactive(obj):
         return
     if isinstance(obj, dict):
+        obj = cast(Dict[Any, Any], obj)
         for k in obj:
             __deeply_walk(obj[k])
     elif isinstance(obj, (list, set)):
+        obj = cast(Sequence[Any], obj)
         for v in obj:
             __deeply_walk(v)
 
@@ -102,31 +105,27 @@ def watch(
     *,
     deep: bool = False,
     immediate: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> StopHandle:
     ...
 
 
 @overload
-def watch(
-    source: Sequence[WatchSource[T]],
-    callback: WatchCallback[List[T]],
-    *,
-    deep: bool = False,
-    immediate: bool = False,
-    **kwargs,
-) -> StopHandle:
+def watch(source: Sequence[WatchSource[T]],
+          callback: WatchCallback[List[T]],
+          *,
+          deep: bool = False,
+          immediate: bool = False,
+          **kwargs: Dict[Any, Any]) -> StopHandle:
     ...
 
 
-def watch(
-    source: Union[WatchSource[T], Sequence[WatchSource[T]]],
-    callback: Union[WatchCallback[T], WatchCallback[List[T]]],
-    *,
-    deep: bool = False,
-    immediate: bool = False,
-    **kwargs,
-) -> StopHandle:
+def watch(source: Union[WatchSource[T], Sequence[WatchSource[T]]],
+          callback: Union[WatchCallback[T], WatchCallback[List[T]]],
+          *,
+          deep: bool = False,
+          immediate: bool = False,
+          **kwargs: Any) -> StopHandle:
     '''
     Watch a source and run a callback when the source changes.
     
@@ -171,12 +170,17 @@ def watch(
             cleanup_callback()
             cleanup_callback = None
 
-    if isinstance(source, Sequence) and not is_reactive(source):
-        src_list = cast(List[WatchSource[T]], list(source))
-        SINGLE_SRC_MOD = False
+    if isinstance(source, Sequence):
+        source = cast(Sequence[WatchSource[T]], source)
+        if is_reactive(source):
+            src_list = cast(List[WatchSource[T]], [source])
+            single_src_mode = True
+        else:
+            src_list = list(source)
+            single_src_mode = False
     else:
         src_list = cast(List[WatchSource[T]], [source])
-        SINGLE_SRC_MOD = True
+        single_src_mode = True
     for src in src_list:
         if not is_reactive(src) and not is_ref(src) and not isfunction(src):
             raise TypeError(f'Invalid watch source type: {type(src)} for watch().')
@@ -259,21 +263,21 @@ def watch(
                 cb = cast(Callable[[], None], callback)
                 cb()
             elif params_cnt == 1:
-                if SINGLE_SRC_MOD:
+                if single_src_mode:
                     cb = cast(Callable[[T], None], callback)
                     cb(new_value_list[0])
                 else:
                     cb = cast(Callable[[List[T]], None], callback)
                     cb(new_value_list)
             elif params_cnt == 2:
-                if SINGLE_SRC_MOD:
+                if single_src_mode:
                     cb = cast(Callable[[T, Union[T, None]], None], callback)
                     cb(new_value_list[0], old_value_list[0])
                 else:
                     cb = cast(Callable[[List[T], List[Union[T, None]]], None], callback)
                     cb(new_value_list, old_value_list[:])
             elif params_cnt == 3:
-                if SINGLE_SRC_MOD:
+                if single_src_mode:
                     cb = cast(Callable[[T, Union[T, None], OnCleanup], None], callback)
                     cb(new_value_list[0], old_value_list[0], cleanup)
                 else:

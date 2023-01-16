@@ -1,3 +1,5 @@
+# pyright: reportMissingTypeStubs=false
+
 from typing import TypeVar, Union, cast
 
 from reactivity.flags import FLAG_OF_REF

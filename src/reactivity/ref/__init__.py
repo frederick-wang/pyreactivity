@@ -1,4 +1,4 @@
-# reactivity/ref.py
+# pyright: reportMissingTypeStubs=false
 
 from typing import Any, Dict, Generic, Set, TypeVar, Union, cast, overload
 
@@ -11,7 +11,7 @@ from reactivity.reactive import reactive
 from reactivity.reactive.utils import reactive_reversed_class_map
 
 from .definitions import Ref
-from .utils import is_ref, unref
+from .utils import is_ref, unref  # pyright: ignore[reportUnusedImport]
 
 T = TypeVar('T')
 
@@ -31,7 +31,7 @@ def track_ref(obj: object, key: str) -> None:
         return
     if DEV:
         print(f'[{"ComputedRef" if is_computed_ref(obj) else "Ref"}] track: self={obj} at {hex(id(obj))} ({id(obj)})')
-    deps: Dict[Union[str, int], Set[ReactiveEffectDef]] = getattr(obj, 'deps')
+    deps: Dict[Union[str, int], Set[ReactiveEffectDef[Any]]] = getattr(obj, 'deps')
     if key not in deps:
         deps[key] = set()
     dep = deps[key]
@@ -41,7 +41,7 @@ def track_ref(obj: object, key: str) -> None:
 def trigger_ref(obj: object, key: str) -> None:
     if not hasattr(obj, 'deps'):
         return
-    deps_dict: Dict[Union[str, int], Set[ReactiveEffectDef]] = getattr(obj, 'deps')
+    deps_dict: Dict[Union[str, int], Set[ReactiveEffectDef[Any]]] = getattr(obj, 'deps')
     if key in deps_dict:
         trigger_effects(deps_dict[key])
     if DEV:
@@ -50,7 +50,7 @@ def trigger_ref(obj: object, key: str) -> None:
 
 class RefImpl(Generic[T]):
     __value: T
-    deps: Dict[Union[str, int], Set[ReactiveEffectDef]]
+    deps: Dict[Union[str, int], Set[ReactiveEffectDef[Any]]]
 
     def __init__(self, value: T) -> None:
         if is_ref(value):
@@ -80,7 +80,7 @@ class RefImpl(Generic[T]):
 
 
 @overload
-def ref(value: T) -> Ref[T]:
+def ref() -> Ref[Any]:
     ...
 
 
@@ -90,11 +90,16 @@ def ref(value: Ref[T]) -> Ref[T]:
 
 
 @overload
-def ref(value: None = None) -> Ref[Any]:
+def ref(value: None) -> Ref[Any]:
     ...
 
 
-def ref(value: Union[T, Ref[T]] = None) -> Ref[T]:
+@overload
+def ref(value: T) -> Ref[T]:
+    ...
+
+
+def ref(value: Union[Ref[T], T, None] = None) -> Ref[T]:
     if is_ref(value):
         value = cast(Ref[T], value)
         return value

@@ -1,6 +1,6 @@
-# reactivity/computed.py
+# pyright: reportMissingTypeStubs=false
 
-from typing import Callable, Dict, Generic, Set, TypeVar, Union, cast
+from typing import Any, Callable, Dict, Generic, Set, TypeVar, Union, cast
 
 from reactivity.effect import ReactiveEffect
 from reactivity.flags import (FLAG_OF_COMPUTED_REF, FLAG_OF_READONLY, FLAG_OF_REF)
@@ -8,14 +8,14 @@ from reactivity.ref import track_ref_value, trigger_ref_value
 from reactivity.reactive.utils import reactive_reversed_class_map
 
 from .definitions import ComputedRef
-from .utils import is_computed_ref
+from .utils import is_computed_ref  # pyright: ignore[reportUnusedImport]
 
 T = TypeVar('T')
 
 
 class ComputedRefImpl(Generic[T]):
     __value: Union[T, None]
-    deps: Dict[Union[str, int], Set[ReactiveEffect]]
+    deps: Dict[Union[str, int], Set[ReactiveEffect[Any]]]
     effect: ReactiveEffect[T]
     _dirty: bool
     _cacheable: bool

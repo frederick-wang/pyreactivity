@@ -1,3 +1,13 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = ["**/node_modules", "**/__pycache__"]
+strict = ["src/**/*.py"]
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+pythonVersion = "3.6"

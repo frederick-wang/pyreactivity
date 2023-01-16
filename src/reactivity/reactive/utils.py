@@ -1,4 +1,6 @@
-from typing import Dict, Set, TypeVar, Union, cast
+# pyright: reportMissingTypeStubs=false
+
+from typing import Any, Dict, Set, TypeVar, Union, cast
 
 from reactivity.effect.definations import ReactiveEffectDef
 from reactivity.effect.utils import (active_effect_stack, track_effects, trigger_effects)
@@ -9,7 +11,7 @@ T = TypeVar('T')
 
 reactive_class_map: Dict[type, type] = {}
 reactive_reversed_class_map: Dict[type, type] = {}
-reactive_deps_map: 'Dict[int, Dict[Union[str, int], Set[ReactiveEffectDef]]]' = {}
+reactive_deps_map: 'Dict[int, Dict[Union[str, int], Set[ReactiveEffectDef[Any]]]]' = {}
 
 __global_reactive_object_map: Dict[int, object] = {}
 __global_original_object_map: Dict[int, object] = {}
@@ -25,7 +27,7 @@ def is_reactive_multable_sequence(obj: object) -> bool:
     return hasattr(obj, '__setitem__') and hasattr(obj, '__getitem__') and is_reactive(obj)
 
 
-def __get_reactive_subscribers(obj: object, key: Union[str, int]) -> Set[ReactiveEffectDef]:
+def __get_reactive_subscribers(obj: object, key: Union[str, int]) -> Set[ReactiveEffectDef[Any]]:
     obj_id = id(obj)
     if obj_id not in reactive_deps_map:
         reactive_deps_map[obj_id] = {}
