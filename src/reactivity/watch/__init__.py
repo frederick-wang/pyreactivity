@@ -296,3 +296,6 @@ def watch(source: Union[WatchSource[T], Sequence[WatchSource[T]]],
     effect(watch_wrapper)
 
     return stop
+
+
+__all__ = ['watch', 'watch_effect']

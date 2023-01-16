@@ -1,8 +1,8 @@
 # pyright: reportMissingTypeStubs=false
 
 import types
-from typing import (Any, Dict, ItemsView, Mapping, MutableMapping, MutableSequence, Optional,
-                    Sequence, Set, Tuple, TypeVar, Union, ValuesView, cast, overload)
+from typing import (Any, Dict, ItemsView, Mapping, MutableMapping, MutableSequence, Optional, Sequence, Set, Tuple,
+                    TypeVar, Union, ValuesView, cast, overload)
 
 from reactivity.env import DEV
 from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP
@@ -644,4 +644,4 @@ def __create_proxy(instance: object, init_with_instance: bool = True):
     return record_new_reactive_obj(instance, patched_class())
 
 
-__all__ = ['reactive', 'to_raw', 'mark_raw']
+__all__ = ['is_reactive', 'mark_raw', 'reactive', 'to_raw']
