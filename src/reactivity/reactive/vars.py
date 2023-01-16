@@ -3,6 +3,7 @@ from typing import cast
 immutable_builtin_types = (
     int,
     float,
+    complex,
     str,
     bool,
     cast(type, frozenset),
