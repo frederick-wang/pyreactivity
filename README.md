@@ -8,8 +8,8 @@ Providing a reactivity system similar to Vue.js for Python.
 
 
 <p align="center">
-<img src="https://img.shields.io/pypi/pyversions/pyreactivity" alt="pyversions"> <img src="https://img.shields.io/pypi/v/pyreactivity" alt="version"> <img src="https://img.shields.io/pypi/l/pyreactivity" alt="license"> <img src="https://img.shields.io/github/last-commit/frederick-wang/pyreactivity" alt="last-commit"> <img src="https://img.shields.io/github/commit-activity/m/frederick-wang/pyreactivity" alt="commit-activity">
-</p>
+<a href="https://pypi.org/project/pyreactivity/" target="_blank"><img src="https://img.shields.io/pypi/pyversions/pyreactivity" alt="pyversions"></a> <a href="https://pypi.org/project/pyreactivity/" target="_blank"><img src="https://img.shields.io/pypi/v/pyreactivity" alt="version"></a> <a href="https://github.com/frederick-wang/pyreactivity/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/pypi/l/pyreactivity" alt="license"></a> <a href="https://github.com/frederick-wang/pyreactivity" target="_blank"><img src="https://img.shields.io/github/last-commit/frederick-wang/pyreactivity" alt="last-commit"></a> <a href="https://github.com/frederick-wang/pyreactivity/commits/main" target="_blank"><img src="https://img.shields.io/github/commit-activity/m/frederick-wang/pyreactivity" alt="commit-activity"></a> <a href="https://github.com/frederick-wang/pyreactivity/actions/workflows/CI.yml" target="_blank"><img src="https://github.com/frederick-wang/pyreactivity/actions/workflows/CI.yml/badge.svg" alt="CI">
+</p></a>
 
 ## Getting Started
 
