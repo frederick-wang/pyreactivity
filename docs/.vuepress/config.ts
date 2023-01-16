@@ -42,6 +42,8 @@ export default defineUserConfig({
         selectLanguageText: 'Languages',
         selectLanguageName: 'English',
         editLinkText: 'Edit this page on GitHub',
+        lastUpdatedText: 'Last Updated',
+        contributorsText: 'Contributors',
         navbar: [{ text: 'Documentation', link: '/guide/introduction' }],
         sidebar: {
           '/guide/': [
@@ -80,6 +82,8 @@ export default defineUserConfig({
         selectLanguageText: '选择语言',
         selectLanguageName: '简体中文',
         editLinkText: '在 GitHub 上编辑此页',
+        lastUpdatedText: '上次更新',
+        contributorsText: '贡献者',
         navbar: [{ text: '文档', link: '/zh/guide/introduction' }],
         sidebar: {
           '/zh/guide/': [
