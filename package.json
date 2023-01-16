@@ -1,11 +1,12 @@
 {
   "name": "pyreactivity",
-  "version": "1.0.0",
+  "version": "0.0.3",
   "description": "A Python package for reactivity like Vue.js.",
   "main": "index.js",
   "scripts": {
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress build docs",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -w -r 0 -s && git add CHANGELOG.md"
   },
   "keywords": [],
   "author": "Zhaoji Wang",
@@ -14,5 +15,9 @@
     "@vuepress/client": "2.0.0-beta.60",
     "vue": "^3.2.45",
     "vuepress": "2.0.0-beta.60"
+  },
+  "dependencies": {
+    "conventional-changelog": "^3.1.25",
+    "conventional-changelog-cli": "^2.2.2"
   }
 }
