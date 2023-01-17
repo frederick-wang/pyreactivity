@@ -587,11 +587,16 @@ def __create_proxy(instance: object):
     if DEV:
         print(f'[Reactive] create proxy: {instance}')
     patched_class = get_patched_class(instance)
-    proxy = patched_class()
-    if isinstance(instance, dict):
-        # NOTE: 根据测试，在 JSONEncoder 中，在对 dict 调用 c_make_encoder 编码时，
-        # 如果这里不随便填上点儿东西初始化，json.dumps 输出内容会为空 {}
-        cast(Any, dict).__init__(proxy, {None: None})
+    try:
+        proxy = patched_class()
+        if isinstance(instance, dict):
+            # NOTE: According to testing, in the JSONEncoder, when calling c_make_encoder to encode a dict,
+            # if something is not initialized here casually, the output of json.dumps will be an empty {}.
+            cast(Any, dict).__init__(proxy, {None: None})
+    except Exception:
+        # If the class supports passing in an instance of itself and directly returning it, then use this feature to bypass the __new__ method。
+        # Because we don't know what parameters to fill in for __new__, we can only try to directly pass in an instance of itself.
+        proxy = patched_class(instance)
     return record_new_reactive_obj(cast(object, instance), proxy)
 
 
