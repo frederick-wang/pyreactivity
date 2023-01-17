@@ -3,7 +3,8 @@
 from typing import Any, Dict, Set, TypeVar, Union, cast
 
 from reactivity.effect.definations import ReactiveEffectDef
-from reactivity.effect.utils import (active_effect_stack, track_effects, trigger_effects)
+from reactivity.effect.utils import track_effects, trigger_effects
+from reactivity.effect.vars import active_effect_stack
 from reactivity.env import DEV
 from reactivity.flags import FLAG_OF_REACTIVE, REACTIVITY_VALUE
 

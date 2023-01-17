@@ -1,7 +1,7 @@
 from typing import Any, Set
 
 from .definations import ReactiveEffectDef
-from .vars import active_effect_stack as active_effect_stack
+from .vars import active_effect_stack
 
 
 def cleanup_effect(effect: ReactiveEffectDef[Any]) -> None:

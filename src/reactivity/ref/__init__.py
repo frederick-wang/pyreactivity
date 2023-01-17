@@ -4,7 +4,8 @@ from typing import Any, Dict, Generic, Set, TypeVar, Union, cast, overload
 
 from reactivity.computed.utils import is_computed_ref
 from reactivity.effect.definations import ReactiveEffectDef
-from reactivity.effect.utils import (active_effect_stack, track_effects, trigger_effects)
+from reactivity.effect.utils import track_effects, trigger_effects
+from reactivity.effect.vars import active_effect_stack
 from reactivity.env import DEV
 from reactivity.flags import FLAG_OF_REF, REF_VALUE
 from reactivity.reactive import reactive
