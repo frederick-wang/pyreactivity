@@ -7,7 +7,9 @@
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -w -r 0 -s && git add CHANGELOG.md",
-    "commit": "cz"
+    "commit": "cz",
+    "test": "pytest",
+    "typecheck": "pyright"
   },
   "keywords": [],
   "author": "Zhaoji Wang",
