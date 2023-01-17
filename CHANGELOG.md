@@ -1,3 +1,13 @@
+## [0.0.5](https://github.com/frederick-wang/pyreactivity/compare/v0.0.4...v0.0.5) (2023-01-17)
+
+
+### Bug Fixes
+
+* **reactive:** fix the bug of proxy ([6161311](https://github.com/frederick-wang/pyreactivity/commit/61613114d759f9e646038bcdd530e3bd8c635fd6))
+* **reactive:** fix the support of ndarray ([6e4aba8](https://github.com/frederick-wang/pyreactivity/commit/6e4aba8f85da4e8cb9c547b9ea816b17c8bfccc4))
+
+
+
 ## [0.0.4](https://github.com/frederick-wang/pyreactivity/compare/v0.0.3...v0.0.4) (2023-01-17)
 
 
