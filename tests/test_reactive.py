@@ -1,4 +1,4 @@
-from reactivity import is_ref, ref, reactive, computed, effect, is_reactive, to_raw, mark_raw
+from reactivity import (computed, deep_to_raw, effect, is_reactive, is_ref, mark_raw, reactive, ref, to_raw)
 
 
 # Dict
@@ -136,8 +136,19 @@ def test_should_not_pollute_original_object_with_Proxies():
 def test_to_raw():
     original = {'foo': 1}
     observed = reactive(original)
-    assert to_raw(observed) == original
-    assert to_raw(original) == original
+    assert to_raw(observed) is original
+    assert to_raw(original) is original
+    a = {'foo': 1}
+    b = {'bar': a}
+    c = [b]
+    observed = reactive(c)
+    assert observed is not c
+    assert observed[0] is not b
+    assert observed[0]['bar'] is not a
+    raw = to_raw(observed)
+    assert raw is c
+    assert raw[0] is b
+    assert raw[0]['bar'] is a
 
 
 # should not unwrap Ref<T>
@@ -212,3 +223,13 @@ def test_should_not_observe_objects_with__REACTIVE_SKIP__():
     original = Original()
     observed = reactive(original)
     assert is_reactive(observed) == False
+
+
+# deep_to_raw
+def test_deep_to_raw():
+    a = {'foo': 1}
+    b = [reactive(a)]
+    assert b[0] is not a
+    # The object returned by deep_to_raw is not guaranteed to be the original object.
+    # It's only guaranteed to be a plain python object.
+    assert 'reactive' not in str(type(deep_to_raw(b)[0]))

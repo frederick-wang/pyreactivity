@@ -1,4 +1,4 @@
-from reactivity import computed, is_ref, reactive, ref, effect, unref
+from reactivity import (computed, deep_unref, effect, is_ref, reactive, ref, unref)
 
 
 # should hold a value
@@ -180,3 +180,11 @@ def test_not_trigger_when_setting_value_to_same_proxy():
 
     a.value = obj
     assert spy1_calls == 1
+
+
+# deep_unref
+def test_deep_unref():
+    a = reactive([ref({'bar': ref([ref(1)])})])
+    assert 'Ref' in str(type(a[0].value['bar'][0]))  # type: ignore
+    assert 'Ref' not in str(type(deep_unref(a)[0]['bar'][0]))  # type: ignore
+    assert str(deep_unref(a)) == '[{\'bar\': [1]}]'
