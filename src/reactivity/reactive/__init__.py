@@ -9,11 +9,10 @@ from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP
 from reactivity.ref.definitions import Ref
 from reactivity.ref.utils import is_ref
 
-from .utils import (deep_to_raw, get_global_reactive_obj, is_in_global_original_object_map,
-                    is_in_global_reactive_object_map, is_marked_raw, is_reactive, mark_raw, reactive_class_map,
-                    reactive_reversed_class_map, record_new_reactive_obj, to_raw, track_reactive, track_reactive_value,
-                    trigger_reactive, trigger_reactive_value)
-from .vars import immutable_builtin_types, supported_builtin_types
+from .utils import (deep_to_raw, get_global_reactive_obj, is_in_global_reactive_object_map, is_marked_raw, is_reactive,
+                    mark_raw, reactive_class_map, reactive_reversed_class_map, record_new_reactive_obj, to_raw,
+                    track_reactive, track_reactive_value, trigger_reactive, trigger_reactive_value)
+from .vars import immutable_builtin_types
 
 T = TypeVar('T')
 U = TypeVar('U')
@@ -240,6 +239,12 @@ class ProxyMetaClass(type):
         # Check if None is in bases, if so, it means that this is the first call to __new__ and we should not do anything
         if type(None) in bases:
             return None
+
+        # Clear the __init__ method of the proxy class
+        def __init__(self: object, *args: Any, **kwargs: Any):
+            pass
+
+        attrs['__init__'] = __init__
         proxy_cls = type.__new__(cls, name, bases, attrs)
 
         patched_track_methods: Set[str] = set()
@@ -302,8 +307,6 @@ class ProxyMetaClass(type):
         # sourcery skip: assign-if-exp, reintroduce-else
 
         has_setattr = hasattr(proxy_cls, '__setattr__')
-        if has_setattr:
-            raw__setattr__ = getattr(proxy_cls, '__setattr__')
 
         if hasattr(proxy_cls, '__getattribute__'):
             raw__getattribute__ = getattr(proxy_cls, '__getattribute__')
@@ -313,25 +316,17 @@ class ProxyMetaClass(type):
                 is_magic: bool = name.startswith('__') and name.endswith('__')
                 if name in patched_track_methods or name in patched_trigger_methods or is_magic:
                     return raw__getattribute__(self, name)
-                    # return original.__getattribute__(name)
-                if is_in_global_original_object_map(self):
-                    original = to_raw(self)
-                    track_reactive(self, name)
-                    if DEV:
-                        print(f'''[Reactive] track({name}): self={repr(self)} at {hex(id(self))} ({id(self)})''')
 
-                    # result = raw__getattribute__(self, name)
-                    result = original.__getattribute__(name)
-                    if callable(result):
-                        result = raw__getattribute__(self, name)
-                    else:
-                        raw__getattribute__(self, name)  # A hack to trigger the __getattribute__ of the reactive object
-                else:
-                    # 如果是一个自定义类，那在初始化响应式对象时，可能会执行一些操作，
-                    # 但此时还没有将响应式对象和原始对象关联在一起，只对响应式对象操作即可
-                    track_reactive(self, name)
-                    if DEV:
-                        print(f'''[Reactive] track({name}): self={repr(self)} at {hex(id(self))} ({id(self)})''')
+                original = to_raw(self)
+                track_reactive(self, name)
+                if DEV:
+                    print(f'''[Reactive] track({name}): self={repr(self)} at {hex(id(self))} ({id(self)})''')
+
+                result = original.__getattribute__(name)
+                if name in original.__class__.__dict__ and getattr(original.__class__, name) and isinstance(
+                        getattr(original.__class__, name), property):
+                    result = raw__getattribute__(self, name)
+                if callable(result):
                     result = raw__getattribute__(self, name)
 
                 if is_ref(result):
@@ -346,43 +341,23 @@ class ProxyMetaClass(type):
             def __setattr__(self: object, name: str, value: Any):
                 if is_reactive(value):
                     value = to_raw(value)
-                if is_in_global_original_object_map(self):
-                    original = to_raw(self)
-                    old_value = original.__getattribute__(name) if hasattr(self, name) else None
-                    if is_ref(old_value):
-                        old_value = cast(Ref[Any], old_value)
-                        if is_ref(value):
-                            value = cast(Ref[Any], value)
-                            if old_value.value == value.value:
-                                return
-                            original.__setattr__(name, value)
-                        else:
-                            if old_value.value == value:
-                                return
-                            old_value.value = value
-                    else:
-                        if old_value == value:
+                original = to_raw(self)
+                old_value = original.__getattribute__(name) if hasattr(self, name) else None
+                if is_ref(old_value):
+                    old_value = cast(Ref[Any], old_value)
+                    if is_ref(value):
+                        value = cast(Ref[Any], value)
+                        if old_value.value == value.value:
                             return
                         original.__setattr__(name, value)
-                else:
-                    # 如果是一个自定义类，那在初始化响应式对象时，可能会执行一些操作，
-                    # 但此时还没有将响应式对象和原始对象关联在一起，只对响应式对象操作即可
-                    old_value = raw__getattribute__(self, name) if hasattr(self, name) else None
-                    if is_ref(old_value):
-                        old_value = cast(Ref[Any], old_value)
-                        if is_ref(value):
-                            value = cast(Ref[Any], value)
-                            if old_value.value == value.value:
-                                return
-                            raw__setattr__(self, name, value)
-                        else:
-                            if old_value.value == value:
-                                return
-                            old_value.value = value
                     else:
-                        if old_value == value:
+                        if old_value.value == value:
                             return
-                        raw__setattr__(self, name, value)
+                        old_value.value = value
+                else:
+                    if old_value == value:
+                        return
+                    original.__setattr__(name, value)
                 trigger_reactive(self, name)
                 if DEV:
                     print(
@@ -393,14 +368,10 @@ class ProxyMetaClass(type):
             patched_trigger_methods.add('__setattr__')
 
         if hasattr(proxy_cls, '__delattr__'):
-            raw__delattr__ = getattr(proxy_cls, '__delattr__')
 
             def __delattr__(self: object, name: str):
-                if is_in_global_original_object_map(self):
-                    original = to_raw(self)
-                    original.__delattr__(name)
-                else:
-                    raw__delattr__(self, name)
+                original = to_raw(self)
+                original.__delattr__(name)
                 trigger_reactive(self, name)
                 if DEV:
                     print(f'''[Reactive] __delattr__: name={name}, self={repr(self)} at {hex(id(self))} ({id(self)})''')
@@ -409,18 +380,13 @@ class ProxyMetaClass(type):
             patched_trigger_methods.add('__delattr__')
 
         if hasattr(proxy_cls, '__dir__'):
-            raw__dir__ = getattr(proxy_cls, '__dir__')
 
             def __dir__(self: object):
                 track_reactive(self, '__dir__')
                 if DEV:
                     print(f'''[Reactive] __dir__: self={repr(self)} at {hex(id(self))} ({id(self)})''')
-
-                if is_in_global_original_object_map(self):
-                    original = to_raw(self)
-                    return original.__dir__()
-                else:
-                    return raw__dir__(self)
+                original = to_raw(self)
+                return original.__dir__()
 
             setattr(proxy_cls, '__dir__', __dir__)
             patched_track_methods.add('__dir__')
@@ -431,11 +397,7 @@ class ProxyMetaClass(type):
         has_getitem = hasattr(proxy_cls, '__getitem__')
         has_setitem = hasattr(proxy_cls, '__setitem__')
 
-        # if has_setitem:
-        # raw__setitem__ = getattr(proxy_cls, '__setitem__')
-
         if has_getitem:
-            # raw__getitem__ = getattr(proxy_cls, '__getitem__')
 
             def __getitem__(self: Union[Sequence[Any], Mapping[Any, Any]], key: slice):
                 original = to_raw(self)
@@ -458,7 +420,6 @@ class ProxyMetaClass(type):
                 if is_reactive(value):
                     value = to_raw(value)
                 original = to_raw(self)
-                # old_value = raw__getitem__(self, key) if key in self else None
                 old_value = original.__getitem__(key) if key in self else None
                 if is_ref(old_value):
                     old_value = cast(Ref[Any], old_value)
@@ -474,7 +435,6 @@ class ProxyMetaClass(type):
                 else:
                     if old_value == value:
                         return
-                    # raw__setitem__(self, key, value)
                     original.__setitem__(key, value)
                 trigger_reactive_value(self)
                 if DEV:
@@ -490,8 +450,6 @@ class ProxyMetaClass(type):
         if not hasattr(proxy_cls, method_name) or method_name in patched_methods:
             return
 
-        # raw_method = getattr(proxy_cls, method_name)
-
         def wrapper(self: object, *args: Any, **kwargs: Any):
             original = to_raw(self)
             track_reactive_value(self)
@@ -499,7 +457,6 @@ class ProxyMetaClass(type):
                 print(
                     f'''[Reactive] track({method_name}): args={args}, kwargs={kwargs}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
                 )
-            # result = raw_method(self, *args, **kwargs)
             result = original.__getattribute__(method_name)(*args, **kwargs)
             return result
 
@@ -511,11 +468,8 @@ class ProxyMetaClass(type):
         if not hasattr(proxy_cls, method_name) or method_name in patched_methods:
             return
 
-        # raw_method = getattr(proxy_cls, method_name)
-
         def wrapper(self: object, *args: Any, **kwargs: Any):
             original = to_raw(self)
-            # result = raw_method(self, *args, **kwargs)
             result = original.__getattribute__(method_name)(*args, **kwargs)
             trigger_reactive_value(self)
             if DEV:
@@ -617,14 +571,7 @@ def reactive(instance: T) -> T:
     if is_in_global_reactive_object_map(instance):
         return get_global_reactive_obj(instance)
 
-    if isinstance(instance, supported_builtin_types):
-        # For built-in types, we need to create a new class inherited from the original class to make it reactive
-        # We specifically optimize the built-in types that are commonly used in the project
-        # These built-in types are: list, bytearray, memoryview, set, dict
-        return __create_proxy(instance)
-
-    # For user defined types, we can directly make it reactive
-    return __create_proxy(instance, init_with_instance=False)
+    return __create_proxy(instance)
 
 
 def get_patched_class(instance: object):
@@ -636,13 +583,16 @@ def get_patched_class(instance: object):
     return reactive_class_map[raw_class]
 
 
-def __create_proxy(instance: object, init_with_instance: bool = True):
+def __create_proxy(instance: object):
     if DEV:
         print(f'[Reactive] create proxy: {instance}')
     patched_class = get_patched_class(instance)
-    if init_with_instance:
-        return record_new_reactive_obj(instance, patched_class(instance))  # 如果这里不填上 instance 初始化，json.dumps 输出内容会为空
-    return record_new_reactive_obj(instance, patched_class())
+    proxy = patched_class()
+    if isinstance(instance, dict):
+        # NOTE: 根据测试，在 JSONEncoder 中，在对 dict 调用 c_make_encoder 编码时，
+        # 如果这里不随便填上点儿东西初始化，json.dumps 输出内容会为空 {}
+        cast(Any, dict).__init__(proxy, {None: None})
+    return record_new_reactive_obj(cast(object, instance), proxy)
 
 
 __all__ = ['is_reactive', 'mark_raw', 'reactive', 'to_raw', 'deep_to_raw']

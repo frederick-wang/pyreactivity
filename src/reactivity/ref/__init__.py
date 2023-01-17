@@ -9,7 +9,7 @@ from reactivity.effect.vars import active_effect_stack
 from reactivity.env import DEV
 from reactivity.flags import FLAG_OF_REF, REF_VALUE
 from reactivity.reactive import reactive
-from reactivity.reactive.utils import reactive_reversed_class_map
+from reactivity.reactive.utils import reactive_reversed_class_map, to_raw
 
 from .definitions import Ref
 from .utils import deep_unref, is_ref, unref
@@ -54,9 +54,7 @@ class RefImpl(Generic[T]):
     deps: Dict[Union[str, int], Set[ReactiveEffectDef[Any]]]
 
     def __init__(self, value: T) -> None:
-        if is_ref(value):
-            raise TypeError(f'TypeError: Cannot create ref from ref. {value} is already a ref.')
-        self.__value = reactive(value)
+        self.__value = reactive(to_raw(unref(value)))
         self.deps = {}
         setattr(self, FLAG_OF_REF, True)
 
@@ -67,10 +65,11 @@ class RefImpl(Generic[T]):
 
     @value.setter
     def value(self, value: T) -> None:
-        new_value = reactive(value)
-        if new_value == self.__value:
+        old_value = to_raw(self.__value)
+        new_value = to_raw(unref(value))
+        if new_value == old_value:
             return
-        self.__value = new_value
+        self.__value = reactive(new_value)
         trigger_ref_value(self)
 
     def __str__(self) -> str:
