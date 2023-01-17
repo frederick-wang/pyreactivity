@@ -26,9 +26,12 @@ Please follow the documentation at [pyreactivity.jianmu.org](https://pyreactivit
 - [x] `is_ref` ( `isRef` ) function
 - [x] `is_computed_ref` ( `isComputedRef` ) function
 - [x] `unref` function
+- [x] `deep_unref` ( `deepUnref` ) function
 - [x] `is_reactive` ( `isReactive` ) function
 - [x] `to_raw` ( `toRaw` ) function
+- [x] `deep_to_raw` ( `deepToRaw` ) function
 - [x] `mark_raw` ( `markRaw` ) function
+- [x] serializable by `json.dumps()` and `json.dump()`
 
 ## Contributing
 
