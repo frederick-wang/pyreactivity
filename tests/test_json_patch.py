@@ -1,7 +1,10 @@
 import io
 import json
 
+import pytest
+
 from reactivity import reactive, ref
+from reactivity.patches import patch_json, unpatch_json
 
 
 # should be able to json.dumps (reactive)
@@ -94,3 +97,22 @@ def test_reactive_json_dumps_ref_none():
     f = io.StringIO()
     json.dump(obj, f)
     assert f.getvalue() == 'null'
+
+
+# should be not able to stringify a ref if unpatch_json is called
+def test_reactive_json_dumps_ref_unpatch():
+    unpatch_json()
+    obj = ref({'foo': ref({'bar': [ref(1), 2, 3]})})
+    with pytest.raises(TypeError, match='Object of type .+ is not JSON serializable'):
+        json.dumps(obj)
+    patch_json()
+    assert json.dumps(obj) == '{"foo": {"bar": [1, 2, 3]}}'
+
+
+# should be able to jsonify ref with default parameter
+def test_reactive_jsonify_ref_default_parameter():
+    from reactivity.patches.json_patch import default
+
+    unpatch_json()
+    obj = ref({'foo': ref({'bar': [ref(1), 2, 3]})})
+    assert json.dumps(obj, default=default) == '{"foo": {"bar": [1, 2, 3]}}'
