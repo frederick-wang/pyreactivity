@@ -1,4 +1,19 @@
-## 0.0.3 (2023-01-16)
+## [0.0.4](https://github.com/frederick-wang/pyreactivity/compare/v0.0.3...v0.0.4) (2023-01-17)
+
+
+### Bug Fixes
+
+* **patches:** fix the support of Ref for json ([e83b2c3](https://github.com/frederick-wang/pyreactivity/commit/e83b2c39d316c78ab8daa17f60f91f93388fc067))
+
+
+### Features
+
+* **patches:** add patch_json() and unpatch_json() functions ([354b2ee](https://github.com/frederick-wang/pyreactivity/commit/354b2ee4f17aa31cb1a92251196253ef2723e10b))
+* **ref/reactivity:** add deep_unref() and deep_to_raw() ([c82afa6](https://github.com/frederick-wang/pyreactivity/commit/c82afa661e26fe7717fb1eab6fba50a17ba38080))
+
+
+
+## [0.0.3](https://github.com/frederick-wang/pyreactivity/compare/637b5936d3a82bfaacdddc55419dbdd2ced82b68...v0.0.3) (2023-01-16)
 
 
 ### Bug Fixes
