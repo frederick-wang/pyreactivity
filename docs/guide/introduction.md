@@ -4,6 +4,10 @@ next: ./quick-start
 
 # Introduction
 
+**Contents**
+
+[[toc]]
+
 ## What is PyReactivity?
 
 PyReactivity is a library in Python that implements "reactivity" functionality, with the goal of allowing you to use reactive programming similar to Vue.js in Python.

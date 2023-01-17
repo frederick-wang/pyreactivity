@@ -11,7 +11,13 @@ next: ./computed
 
 ## Declaring Reactive State
 
-We can use the `reactive()` function to create a reactive object, which can be a `dict`, `list`, `set`, or any other type of mutable instance object.
+In the section **"What is reactivity?"** in the [Introduction](../introduction.md), we introduced the concept of "reactivity".
+
+::: tip
+If you are not familiar with the concept of "reactivity," it is recommended that you read it first.
+:::
+
+In PyReactivity, We can use the `reactive()` function to create a reactive object, which can be a `dict`, `list`, `set`, or any other type of mutable instance object.
 
 ```python:no-line-numbers
 from reactivity import reactive
@@ -133,7 +139,7 @@ bar = obj['bar']
 
 In summary, `ref()` allows us to define reactive variables on any type of value, not just mutable objects. This means that we can create a "reference" to any value and pass it around without losing reactivity. This feature is important as it allows us to define reactive variables in independent functions and then pass them out as return values, to be used elsewhere.
 
-### Unpacking ref in a reactive object
+### Unpacking Ref in a Reactive Object
 
 When a `ref` is nested in a reactive object, as a member or property, it will be automatically 'unwrapped' when accessed or modified. This means that it behaves like a regular property and you don't have to use `.value`：
 
@@ -162,7 +168,7 @@ print(state['count'])  # 2
 print(count.value)  # 1
 ```
 
-### Unpacking ref in a sequence type
+### Unpacking Ref in a Sequence
 
 Note that if a ref is nested within a sequence (such as a `list`) type of reactive object, it will not be automatically unpacked when accessed:
 

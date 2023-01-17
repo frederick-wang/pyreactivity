@@ -15,6 +15,88 @@ const head: HeadConfig[] = [
   ]
 ]
 
+const sidebar = {
+  '/guide/': [
+    {
+      text: 'Getting Started',
+      children: [
+        { text: 'Introduction', link: '/guide/introduction' },
+        {
+          text: 'Quick Start',
+          link: '/guide/quick-start'
+        }
+      ]
+    },
+    {
+      text: 'Essentials',
+      children: [
+        {
+          text: 'Reactivity Fundamentals',
+          link: '/guide/essentials/reactivity-fundamentals'
+        },
+        {
+          text: 'Computed Properties',
+          link: '/guide/essentials/computed'
+        },
+        {
+          text: 'Watchers',
+          link: '/guide/essentials/watchers'
+        }
+      ]
+    },
+    {
+      text: 'Tips',
+      children: [
+        {
+          text: 'JSON Serialization',
+          link: '/guide/tips/json-serialization'
+        }
+      ]
+    }
+  ]
+}
+
+const zh_sidebar = {
+  '/zh/guide/': [
+    {
+      text: '开始',
+      children: [
+        { text: '简介', link: '/zh/guide/introduction' },
+        {
+          text: '快速上手',
+          link: '/zh/guide/quick-start'
+        }
+      ]
+    },
+    {
+      text: '基础',
+      children: [
+        {
+          text: '响应式基础',
+          link: '/zh/guide/essentials/reactivity-fundamentals'
+        },
+        {
+          text: '计算属性',
+          link: '/zh/guide/essentials/computed'
+        },
+        {
+          text: '侦听器',
+          link: '/zh/guide/essentials/watchers'
+        }
+      ]
+    },
+    {
+      text: '小技巧',
+      children: [
+        {
+          text: 'JSON 序列化',
+          link: '/zh/guide/tips/json-serialization'
+        }
+      ]
+    }
+  ]
+}
+
 export default defineUserConfig({
   head,
   locales: {
@@ -45,37 +127,7 @@ export default defineUserConfig({
         lastUpdatedText: 'Last Updated',
         contributorsText: 'Contributors',
         navbar: [{ text: 'Documentation', link: '/guide/introduction' }],
-        sidebar: {
-          '/guide/': [
-            {
-              text: 'Getting Started',
-              children: [
-                { text: 'Introduction', link: '/guide/introduction' },
-                {
-                  text: 'Quick Start',
-                  link: '/guide/quick-start'
-                }
-              ]
-            },
-            {
-              text: 'Essentials',
-              children: [
-                {
-                  text: 'Reactivity Fundamentals',
-                  link: '/guide/essentials/reactivity-fundamentals'
-                },
-                {
-                  text: 'Computed Properties',
-                  link: '/guide/essentials/computed'
-                },
-                {
-                  text: 'Watchers',
-                  link: '/guide/essentials/watchers'
-                }
-              ]
-            }
-          ]
-        }
+        sidebar
       },
       '/zh/': {
         notFound: ['你似乎来到了没有知识存在的荒原...'],
@@ -85,37 +137,7 @@ export default defineUserConfig({
         lastUpdatedText: '上次更新',
         contributorsText: '贡献者',
         navbar: [{ text: '文档', link: '/zh/guide/introduction' }],
-        sidebar: {
-          '/zh/guide/': [
-            {
-              text: '开始',
-              children: [
-                { text: '简介', link: '/zh/guide/introduction' },
-                {
-                  text: '快速上手',
-                  link: '/zh/guide/quick-start'
-                }
-              ]
-            },
-            {
-              text: '基础',
-              children: [
-                {
-                  text: '响应式基础',
-                  link: '/zh/guide/essentials/reactivity-fundamentals'
-                },
-                {
-                  text: '计算属性',
-                  link: '/zh/guide/essentials/computed'
-                },
-                {
-                  text: '侦听器',
-                  link: '/zh/guide/essentials/watchers'
-                }
-              ]
-            }
-          ]
-        }
+        sidebar: zh_sidebar
       }
     }
   })

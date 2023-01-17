@@ -107,13 +107,13 @@ Why caching is needed? Imagine we have a very performance-intensive computed pro
 
 ## Note
 
-### Getter function should not have side effects
+### Getter Function Should not Have Side Effects
 
 The getter function of computed properties should only do the calculation and not have any other side effects, this is very important, please remember not to modify values outside the getter function!
 
 A computed property declaration describes how to derive a value from other values. Therefore, the getter's job should be limited to calculating and returning this value. In later guides, we will discuss how to use listeners to run code that causes side effects based on changes in other reactive states.
 
-### Cannot directly modify computed property value
+### Cannot Directly Modify Computed Property Value
 
 The value returned from a computed property is **derived state**. It can be thought of as a "temporary snapshot" that is created each time the source state changes.
 

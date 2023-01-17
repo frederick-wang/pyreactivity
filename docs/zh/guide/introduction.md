@@ -4,6 +4,10 @@ next: ./quick-start
 
 # 简介
 
+**目录**
+
+[[toc]]
+
 ## 什么是 PyReactivity？
 
 PyReactivity 是一个在 Python 中实现了「响应性」功能的库，它的目标是让你能够在 Python 中使用类似 Vue.js 的响应式编程。

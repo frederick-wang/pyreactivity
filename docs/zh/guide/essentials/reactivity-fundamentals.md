@@ -11,7 +11,13 @@ next: ./computed
 
 ## 声明响应式状态
 
-我们可以使用 `reactive()` 函数创建一个响应式对象，它可以是 `dict`, `list`, `set` 或者其他任意类型的可变（mutable）实例对象：
+在 [简介](../introduction.md) 的 **「什么是响应性？」** 一节中，我们介绍了「响应性」的概念。
+
+::: tip
+如果你还不了解「响应性」的概念，建议先阅读一下。
+:::
+
+在 PyReactivity 中，我们可以使用 `reactive()` 函数创建一个响应式对象，它可以是 `dict`, `list`, `set` 或者其他任意类型的可变（mutable）实例对象：
 
 ```python:no-line-numbers
 from reactivity import reactive

@@ -1,5 +1,6 @@
 ---
 prev: ./computed
+next: ../tips/json-serialization
 ---
 
 # Watchers
@@ -8,7 +9,7 @@ prev: ./computed
 
 [[toc]]
 
-## Basic example
+## Basic Example
 
 Computed properties allow us to declare calculations of derived values. However, in some cases, we need to perform some "side effects" when the state changes. This is where watchers come into play.
 
@@ -40,7 +41,7 @@ The callback function can be triggered when the value of `foo` changes, calling 
 - If there is only one parameter, the callback function will be called each time it is triggered and the parameter is the **new value**.
 - If there are two parameters, the callback function will be called each time it is triggered and the two parameters are respectively the **new value** and **old value**.
 
-## Watching to data source types
+## Types of Data Sources that can be Watched
 
 The first parameter of `watch()` can take different forms of 'data source': it can be a ref (including computed properties), a reactive object, a getter function, or a sequence of multiple data sources (such as a `list`):
 
