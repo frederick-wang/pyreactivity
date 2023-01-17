@@ -9,10 +9,10 @@ from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP
 from reactivity.ref.definitions import Ref
 from reactivity.ref.utils import is_ref
 
-from .utils import (get_global_reactive_obj, is_in_global_original_object_map, is_in_global_reactive_object_map,
-                    is_marked_raw, is_reactive, mark_raw, reactive_class_map, reactive_reversed_class_map,
-                    record_new_reactive_obj, to_raw, track_reactive, track_reactive_value, trigger_reactive,
-                    trigger_reactive_value)
+from .utils import (deep_to_raw, get_global_reactive_obj, is_in_global_original_object_map,
+                    is_in_global_reactive_object_map, is_marked_raw, is_reactive, mark_raw, reactive_class_map,
+                    reactive_reversed_class_map, record_new_reactive_obj, to_raw, track_reactive, track_reactive_value,
+                    trigger_reactive, trigger_reactive_value)
 from .vars import immutable_builtin_types, supported_builtin_types
 
 T = TypeVar('T')
@@ -645,4 +645,4 @@ def __create_proxy(instance: object, init_with_instance: bool = True):
     return record_new_reactive_obj(instance, patched_class())
 
 
-__all__ = ['is_reactive', 'mark_raw', 'reactive', 'to_raw']
+__all__ = ['is_reactive', 'mark_raw', 'reactive', 'to_raw', 'deep_to_raw']

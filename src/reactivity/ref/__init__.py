@@ -12,7 +12,7 @@ from reactivity.reactive import reactive
 from reactivity.reactive.utils import reactive_reversed_class_map
 
 from .definitions import Ref
-from .utils import is_ref, unref  # pyright: ignore[reportUnusedImport]
+from .utils import deep_unref, is_ref, unref
 
 T = TypeVar('T')
 
@@ -110,4 +110,4 @@ def ref(value: Union[Ref[T], T, None] = None) -> Ref[T]:
     return cast(Ref[T], result)
 
 
-__all__ = ['is_ref', 'ref', 'unref', 'Ref']
+__all__ = ['is_ref', 'ref', 'unref', 'deep_unref', 'Ref']
