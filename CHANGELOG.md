@@ -1,3 +1,12 @@
+## [0.0.6](https://github.com/frederick-wang/pyreactivity/compare/v0.0.5...v0.0.6) (2023-01-19)
+
+
+### Bug Fixes
+
+* 1. rename DEV to DEBUG; 2. Fixed the bug that after assigning empty value to some reactive objs ([febe793](https://github.com/frederick-wang/pyreactivity/commit/febe793f622554238e4321bb568c1eb61c0f28ca))
+
+
+
 ## [0.0.5](https://github.com/frederick-wang/pyreactivity/compare/v0.0.4...v0.0.5) (2023-01-17)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "pyreactivity",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A Python package for reactivity like Vue.js.",
   "main": "index.js",
   "scripts": {
