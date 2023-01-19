@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterable, Set, TypeVar, Union, cast
 from reactivity.effect.definations import ReactiveEffectDef
 from reactivity.effect.utils import track_effects, trigger_effects
 from reactivity.effect.vars import active_effect_stack
-from reactivity.env import DEV
+from reactivity.env import DEBUG
 from reactivity.flags import FLAG_OF_REACTIVE, REACTIVITY_VALUE
 
 T = TypeVar('T')
@@ -112,7 +112,7 @@ def deep_to_raw(observed: T) -> T:
 def record_new_reactive_obj(original: T, observed: T) -> T:
     __global_reactive_object_map[id(original)] = observed
     __global_original_object_map[id(observed)] = original
-    if DEV:
+    if DEBUG:
         print(
             f'record_new_reactive_obj: {original} at {hex(id(original))} ({id(original)}) -> {observed} at {hex(id(observed))} ({id(observed)})'
         )
@@ -120,7 +120,7 @@ def record_new_reactive_obj(original: T, observed: T) -> T:
 
 
 def mark_raw(instance: T) -> T:
-    if DEV:
+    if DEBUG:
         print(f'mark_raw: {instance} at {hex(id(instance))} ({id(instance)})')
     __marked_raw_set.add(id(instance))
     return instance

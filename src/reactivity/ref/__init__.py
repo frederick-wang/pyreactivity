@@ -6,7 +6,7 @@ from reactivity.computed.utils import is_computed_ref
 from reactivity.effect.definations import ReactiveEffectDef
 from reactivity.effect.utils import track_effects, trigger_effects
 from reactivity.effect.vars import active_effect_stack
-from reactivity.env import DEV
+from reactivity.env import DEBUG
 from reactivity.flags import FLAG_OF_REF, REF_VALUE
 from reactivity.reactive import reactive
 from reactivity.reactive.utils import reactive_reversed_class_map, to_raw
@@ -30,7 +30,7 @@ def track_ref(obj: object, key: str) -> None:
         return
     if not hasattr(obj, 'deps'):
         return
-    if DEV:
+    if DEBUG:
         print(f'[{"ComputedRef" if is_computed_ref(obj) else "Ref"}] track: self={obj} at {hex(id(obj))} ({id(obj)})')
     deps: Dict[Union[str, int], Set[ReactiveEffectDef[Any]]] = getattr(obj, 'deps')
     if key not in deps:
@@ -45,7 +45,7 @@ def trigger_ref(obj: object, key: str) -> None:
     deps_dict: Dict[Union[str, int], Set[ReactiveEffectDef[Any]]] = getattr(obj, 'deps')
     if key in deps_dict:
         trigger_effects(deps_dict[key])
-    if DEV:
+    if DEBUG:
         print(f'[Ref] trigger: self={obj} at {hex(id(obj))} ({id(obj)})')
 
 
@@ -54,14 +54,14 @@ class RefImpl(Generic[T]):
     deps: Dict[Union[str, int], Set[ReactiveEffectDef[Any]]]
 
     def __init__(self, value: T) -> None:
-        self.__value = reactive(to_raw(unref(value)))
+        self.__value = to_raw(unref(value))
         self.deps = {}
         setattr(self, FLAG_OF_REF, True)
 
     @property
     def value(self) -> T:
         track_ref_value(self)
-        return self.__value
+        return reactive(self.__value)
 
     @value.setter
     def value(self, value: T) -> None:
@@ -69,7 +69,7 @@ class RefImpl(Generic[T]):
         new_value = to_raw(unref(value))
         if new_value == old_value:
             return
-        self.__value = reactive(new_value)
+        self.__value = new_value
         trigger_ref_value(self)
 
     def __str__(self) -> str:

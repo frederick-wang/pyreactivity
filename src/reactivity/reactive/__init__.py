@@ -4,7 +4,7 @@ import types
 from typing import (Any, Dict, ItemsView, Mapping, MutableMapping, MutableSequence, Optional, Sequence, Set, Tuple,
                     TypeVar, Union, ValuesView, cast, overload)
 
-from reactivity.env import DEV
+from reactivity.env import DEBUG
 from reactivity.flags import FLAG_OF_REACTIVE, FLAG_OF_SKIP
 from reactivity.ref.definitions import Ref
 from reactivity.ref.utils import is_ref
@@ -319,7 +319,7 @@ class ProxyMetaClass(type):
 
                 original = to_raw(self)
                 track_reactive(self, name)
-                if DEV:
+                if DEBUG:
                     print(f'''[Reactive] track({name}): self={repr(self)} at {hex(id(self))} ({id(self)})''')
 
                 result = original.__getattribute__(name)
@@ -359,7 +359,7 @@ class ProxyMetaClass(type):
                         return
                     original.__setattr__(name, value)
                 trigger_reactive(self, name)
-                if DEV:
+                if DEBUG:
                     print(
                         f'''[Reactive] __setattr__: name={name}, value={value}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
                     )
@@ -373,7 +373,7 @@ class ProxyMetaClass(type):
                 original = to_raw(self)
                 original.__delattr__(name)
                 trigger_reactive(self, name)
-                if DEV:
+                if DEBUG:
                     print(f'''[Reactive] __delattr__: name={name}, self={repr(self)} at {hex(id(self))} ({id(self)})''')
 
             setattr(proxy_cls, '__delattr__', __delattr__)
@@ -383,7 +383,7 @@ class ProxyMetaClass(type):
 
             def __dir__(self: object):
                 track_reactive(self, '__dir__')
-                if DEV:
+                if DEBUG:
                     print(f'''[Reactive] __dir__: self={repr(self)} at {hex(id(self))} ({id(self)})''')
                 original = to_raw(self)
                 return original.__dir__()
@@ -402,7 +402,7 @@ class ProxyMetaClass(type):
             def __getitem__(self: Union[Sequence[Any], Mapping[Any, Any]], key: slice):
                 original = to_raw(self)
                 track_reactive_value(self)
-                if DEV:
+                if DEBUG:
                     print(
                         f'''[Reactive] track(__getitem__): key={key}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
                     )
@@ -437,7 +437,7 @@ class ProxyMetaClass(type):
                         return
                     original.__setitem__(key, value)
                 trigger_reactive_value(self)
-                if DEV:
+                if DEBUG:
                     print(
                         f'''[Reactive] trigger(__setitem__): key={key}, value={value}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
                     )
@@ -453,7 +453,7 @@ class ProxyMetaClass(type):
         def wrapper(self: object, *args: Any, **kwargs: Any):
             original = to_raw(self)
             track_reactive_value(self)
-            if DEV:
+            if DEBUG:
                 print(
                     f'''[Reactive] track({method_name}): args={args}, kwargs={kwargs}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
                 )
@@ -472,7 +472,7 @@ class ProxyMetaClass(type):
             original = to_raw(self)
             result = original.__getattribute__(method_name)(*args, **kwargs)
             trigger_reactive_value(self)
-            if DEV:
+            if DEBUG:
                 print(
                     f'''[Reactive] trigger({method_name}): args={args}, kwargs={kwargs}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
                 )
@@ -488,7 +488,7 @@ class ProxyMetaClass(type):
             def get(self: Dict[Any, Any], key: Any, default: Any = None):
                 original = to_raw(self)
                 track_reactive_value(self)
-                if DEV:
+                if DEBUG:
                     print(
                         f'''[Reactive] track(get): key={key}, default={default}, self={repr(self)} at {hex(id(self))} ({id(self)})'''
                     )
@@ -505,7 +505,7 @@ class ProxyMetaClass(type):
             def items(self: Dict[T, U]) -> dict_items[T, U]:
                 original: Dict[T, U] = to_raw(self)
                 track_reactive_value(self)
-                if DEV:
+                if DEBUG:
                     print(f'''[Reactive] track(items): self={repr(self)} at {hex(id(self))} ({id(self)})''')
                 return dict_items(original)
 
@@ -517,7 +517,7 @@ class ProxyMetaClass(type):
             def values(self: Dict[Any, U]) -> dict_values[U]:
                 original: Dict[Any, U] = to_raw(self)
                 track_reactive_value(self)
-                if DEV:
+                if DEBUG:
                     print(f'''[Reactive] track(values): self={repr(self)} at {hex(id(self))} ({id(self)})''')
                 return dict_values(original)
 
@@ -584,7 +584,7 @@ def get_patched_class(instance: object):
 
 
 def __create_proxy(instance: object):
-    if DEV:
+    if DEBUG:
         print(f'[Reactive] create proxy: {instance}')
     patched_class = get_patched_class(instance)
     try:
@@ -592,7 +592,19 @@ def __create_proxy(instance: object):
         if isinstance(instance, dict):
             # NOTE: According to testing, in the JSONEncoder, when calling c_make_encoder to encode a dict,
             # if something is not initialized here casually, the output of json.dumps will be an empty {}.
+            # Example:
+            # d = reactive({'a': 1})
+            # json.dumps(d)
             cast(Any, dict).__init__(proxy, {None: None})
+        elif isinstance(instance, list):
+            # NOTE: According to testing, for list, if you don't initialize it with an element, reactive([]) will be equal to any reactive list
+            cast(Any, list).__init__(proxy, [None])
+        elif isinstance(instance, set):
+            # NOTE: According to testing, for set, if you don't initialize it with an element, reactive(set()) will be equal to any reactive set
+            cast(Any, set).__init__(proxy, {None})
+        elif isinstance(instance, tuple):
+            # NOTE: According to testing, for tuple, if you don't initialize it with an element, reactive(()) will be equal to any reactive tuple
+            cast(Any, tuple).__init__(proxy, (None,))
     except Exception:
         # If the class supports passing in an instance of itself and directly returning it, then use this feature to bypass the __new__ method。
         # Because we don't know what parameters to fill in for __new__, we can only try to directly pass in an instance of itself.
