@@ -3,7 +3,7 @@
 
 
 <p align="center" color="#262626">
-Providing a reactivity system similar to Vue.js for Python.
+Provide a reactivity system similar to Vue.js for Python.
 </p>
 
 
