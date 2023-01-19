@@ -233,3 +233,26 @@ def test_deep_to_raw():
     # The object returned by deep_to_raw is not guaranteed to be the original object.
     # It's only guaranteed to be a plain python object.
     assert 'reactive' not in str(type(deep_to_raw(b)[0]))
+
+
+# compared with blank value
+def test_compared_with_blank_value():
+    # List
+    assert reactive([]) != reactive([1, 2, 3])
+    assert reactive([1, 2, 3]) != reactive([])
+
+    # Dict
+    assert reactive({}) != reactive({'foo': 1})
+    assert reactive({'foo': 1}) != reactive({})
+
+    # Set
+    assert reactive(set()) != reactive({1, 2, 3})
+    assert reactive({1, 2, 3}) != reactive(set())
+
+    # Tuple
+    assert reactive(tuple()) != reactive((1, 2, 3))
+    assert reactive((1, 2, 3)) != reactive(tuple())
+
+    # FrozenSet
+    assert reactive(frozenset()) != reactive(frozenset({1, 2, 3}))
+    assert reactive(frozenset({1, 2, 3})) != reactive(frozenset())

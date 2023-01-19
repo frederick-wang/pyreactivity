@@ -488,3 +488,66 @@ def test_watching_multiple_sources_computed():
     value.value = '2'
     assert plus.value == True
     assert count == 0
+
+
+# should watch the change when assigning a blank value
+def test_should_watch_the_change_when_assigning_a_blank_value():
+    # List
+    a = ref([1, 2, 3])
+    cb_a_calls = 0
+
+    def cb_a():
+        nonlocal cb_a_calls
+        cb_a_calls += 1
+
+    watch(a, cb_a)
+    a.value = []
+    assert cb_a_calls == 1
+
+    # Dict
+    b = ref({'a': 1, 'b': 2, 'c': 3})
+    cb_b_calls = 0
+
+    def cb_b():
+        nonlocal cb_b_calls
+        cb_b_calls += 1
+
+    watch(b, cb_b)
+    b.value = {}
+    assert cb_b_calls == 1
+
+    # Set
+    c = ref({1, 2, 3})
+    cb_c_calls = 0
+
+    def cb_c():
+        nonlocal cb_c_calls
+        cb_c_calls += 1
+
+    watch(c, cb_c)
+    c.value = set()
+    assert cb_c_calls == 1
+
+    # Tuple
+    d = ref((1, 2, 3))
+    cb_d_calls = 0
+
+    def cb_d():
+        nonlocal cb_d_calls
+        cb_d_calls += 1
+
+    watch(d, cb_d)
+    d.value = tuple()
+    assert cb_d_calls == 1
+
+    # FronzeSet
+    e = ref(frozenset([1, 2, 3]))
+    cb_e_calls = 0
+
+    def cb_e():
+        nonlocal cb_e_calls
+        cb_e_calls += 1
+
+    watch(e, cb_e)
+    e.value = frozenset()
+    assert cb_e_calls == 1
