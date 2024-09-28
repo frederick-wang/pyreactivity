@@ -13,7 +13,7 @@ Provide a reactivity system similar to Vue.js for Python.
 
 ## Getting Started
 
-Please follow the documentation at [pyreactivity.jianmu.org](https://pyreactivity.jianmu.org/)
+Please follow the documentation at [https://github.com/frederick-wang/pyreactivity/blob/main/docs/guide/introduction.md](https://github.com/frederick-wang/pyreactivity/blob/main/docs/guide/introduction.md)
 
 ## Supported features
 
